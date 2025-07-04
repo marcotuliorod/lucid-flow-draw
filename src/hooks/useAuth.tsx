@@ -19,6 +19,7 @@ export const useAuth = () => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session)
         setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)
@@ -29,24 +30,42 @@ export const useAuth = () => {
   }, [])
 
   const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    })
-    return { data, error }
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      })
+      console.log('SignUp result:', { data, error })
+      return { data, error }
+    } catch (err) {
+      console.error('SignUp error:', err)
+      return { data: null, error: err as any }
+    }
   }
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    return { data, error }
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      console.log('SignIn result:', { data, error })
+      return { data, error }
+    } catch (err) {
+      console.error('SignIn error:', err)
+      return { data: null, error: err as any }
+    }
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    return { error }
+    try {
+      const { error } = await supabase.auth.signOut()
+      console.log('SignOut result:', { error })
+      return { error }
+    } catch (err) {
+      console.error('SignOut error:', err)
+      return { error: err as any }
+    }
   }
 
   return {

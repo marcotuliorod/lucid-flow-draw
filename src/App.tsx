@@ -11,10 +11,19 @@ import ProcessEditor from "./components/ProcessEditor";
 import LoginForm from "./components/auth/LoginForm";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const AppContent = () => {
   const { user, loading } = useAuth();
+
+  console.log('App state:', { user: user?.email, loading });
 
   if (loading) {
     return (
