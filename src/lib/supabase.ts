@@ -26,7 +26,10 @@ const createMockSupabase = () => {
 
   // Mock delete query builder that maintains proper chainability
   const mockDeleteBuilder = {
-    eq: (column: string, value: any) => Promise.resolve(mockDeleteSuccess)
+    eq: (column: string, value: any) => {
+      // Return a promise that resolves to the success result
+      return Promise.resolve(mockDeleteSuccess)
+    }
   }
   
   return {
