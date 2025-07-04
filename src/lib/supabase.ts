@@ -14,6 +14,7 @@ const createMockSupabase = () => {
   const mockError = { message: 'Supabase not configured' }
   const mockSuccess = { data: [], error: null }
   const mockSingle = { data: null, error: mockError }
+  const mockDeleteSuccess = { error: null }
   
   // Mock query builder that returns promises and maintains chainability
   const mockQueryBuilder = {
@@ -21,6 +22,14 @@ const createMockSupabase = () => {
     order: () => Promise.resolve(mockSuccess),
     single: () => Promise.resolve(mockSingle),
     select: () => mockQueryBuilder
+  }
+
+  // Mock delete query builder that resolves to success when awaited
+  const mockDeleteBuilder = {
+    eq: () => mockDeleteBuilder,
+    then: (onFulfilled: any) => Promise.resolve(mockDeleteSuccess).then(onFulfilled),
+    catch: (onRejected: any) => Promise.resolve(mockDeleteSuccess).catch(onRejected),
+    finally: (onFinally: any) => Promise.resolve(mockDeleteSuccess).finally(onFinally)
   }
   
   return {
@@ -37,7 +46,7 @@ const createMockSupabase = () => {
         select: () => mockQueryBuilder
       }),
       update: () => mockQueryBuilder,
-      delete: () => mockQueryBuilder
+      delete: () => mockDeleteBuilder
     })
   }
 }
