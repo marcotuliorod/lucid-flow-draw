@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
@@ -89,12 +88,48 @@ export const useAuth = () => {
     }
   }
 
+  const signInWithGoogle = async () => {
+    try {
+      console.log('useAuth: Attempting Google signin')
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      })
+      console.log('useAuth: Google SignIn result:', { data, error: error?.message })
+      return { data, error }
+    } catch (err) {
+      console.error('useAuth: Google SignIn error:', err)
+      return { data: null, error: err as any }
+    }
+  }
+
+  const signInWithFacebook = async () => {
+    try {
+      console.log('useAuth: Attempting Facebook signin')
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'facebook',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      })
+      console.log('useAuth: Facebook SignIn result:', { data, error: error?.message })
+      return { data, error }
+    } catch (err) {
+      console.error('useAuth: Facebook SignIn error:', err)
+      return { data: null, error: err as any }
+    }
+  }
+
   return {
     user,
     session,
     loading,
     signUp,
     signIn,
-    signOut
+    signOut,
+    signInWithGoogle,
+    signInWithFacebook
   }
 }

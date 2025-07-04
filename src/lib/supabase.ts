@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
@@ -24,9 +25,9 @@ const createMockSupabase = () => {
   }
 
   // Mock delete query builder that maintains proper chainability
-  const createMockDeleteBuilder = () => ({
+  const mockDeleteBuilder = {
     eq: (column: string, value: any) => Promise.resolve(mockDeleteSuccess)
-  })
+  }
   
   return {
     auth: {
@@ -34,6 +35,7 @@ const createMockSupabase = () => {
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
       signUp: () => Promise.resolve({ data: null, error: mockError }),
       signInWithPassword: () => Promise.resolve({ data: null, error: mockError }),
+      signInWithOAuth: () => Promise.resolve({ data: null, error: mockError }),
       signOut: () => Promise.resolve({ error: null })
     },
     from: () => ({
@@ -42,7 +44,7 @@ const createMockSupabase = () => {
         select: () => mockQueryBuilder
       }),
       update: () => mockQueryBuilder,
-      delete: () => createMockDeleteBuilder()
+      delete: () => mockDeleteBuilder
     })
   }
 }
