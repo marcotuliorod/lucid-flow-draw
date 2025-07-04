@@ -15,13 +15,13 @@ const createMockSupabase = () => {
   const mockSuccess = { data: [], error: null }
   const mockSingle = { data: null, error: mockError }
   
-  // Create chainable mock methods without circular references
-  const createMockChain = () => ({
-    eq: () => createMockChain(),
+  // Mock query builder that returns promises
+  const mockQueryBuilder = {
+    eq: () => mockQueryBuilder,
     order: () => Promise.resolve(mockSuccess),
     single: () => Promise.resolve(mockSingle),
-    select: () => createMockChain()
-  })
+    select: () => mockQueryBuilder
+  }
   
   return {
     auth: {
@@ -32,12 +32,12 @@ const createMockSupabase = () => {
       signOut: () => Promise.resolve({ error: null })
     },
     from: () => ({
-      select: () => createMockChain(),
+      select: () => mockQueryBuilder,
       insert: () => ({
-        select: () => createMockChain()
+        select: () => mockQueryBuilder
       }),
-      update: () => createMockChain(),
-      delete: () => createMockChain()
+      update: () => mockQueryBuilder,
+      delete: () => Promise.resolve({ error: null })
     })
   }
 }
