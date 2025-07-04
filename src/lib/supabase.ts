@@ -24,12 +24,15 @@ const createMockSupabase = () => {
     select: () => mockQueryBuilder
   }
 
-  // Mock delete query builder that resolves to success when awaited
+  // Mock delete query builder that properly handles await
   const mockDeleteBuilder = {
     eq: () => mockDeleteBuilder,
-    then: (onFulfilled: any) => Promise.resolve(mockDeleteSuccess).then(onFulfilled),
-    catch: (onRejected: any) => Promise.resolve(mockDeleteSuccess).catch(onRejected),
-    finally: (onFinally: any) => Promise.resolve(mockDeleteSuccess).finally(onFinally)
+    // Make it properly awaitable by returning a Promise
+    then: (onFulfilled?: any) => Promise.resolve(mockDeleteSuccess).then(onFulfilled),
+    catch: (onRejected?: any) => Promise.resolve(mockDeleteSuccess).catch(onRejected),
+    finally: (onFinally?: any) => Promise.resolve(mockDeleteSuccess).finally(onFinally),
+    // Add Symbol.asyncIterator to make it properly awaitable
+    [Symbol.toStringTag]: 'Promise'
   }
   
   return {
