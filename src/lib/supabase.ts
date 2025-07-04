@@ -24,16 +24,17 @@ const createMockSupabase = () => {
     select: () => mockQueryBuilder
   }
 
-  // Mock delete query builder that properly handles await
-  const mockDeleteBuilder = {
-    eq: () => mockDeleteBuilder,
-    // Make it properly awaitable by returning a Promise
-    then: (onFulfilled?: any) => Promise.resolve(mockDeleteSuccess).then(onFulfilled),
-    catch: (onRejected?: any) => Promise.resolve(mockDeleteSuccess).catch(onRejected),
-    finally: (onFinally?: any) => Promise.resolve(mockDeleteSuccess).finally(onFinally),
-    // Add Symbol.asyncIterator to make it properly awaitable
-    [Symbol.toStringTag]: 'Promise'
-  }
+  // Mock delete query builder - return a Promise directly when awaited
+  const createMockDeleteBuilder = () => ({
+    eq: () => createMockDeleteBuilder(),
+    // Convert to Promise when awaited
+    [Symbol.toPrimitive]: () => Promise.resolve(mockDeleteSuccess),
+    // Make it awaitable by implementing PromiseLike
+    then: <T>(onFulfilled?: (value: typeof mockDeleteSuccess) => T) => 
+      Promise.resolve(mockDeleteSuccess).then(onFulfilled),
+    catch: (onRejected?: (reason: any) => any) => 
+      Promise.resolve(mockDeleteSuccess).catch(onRejected)
+  })
   
   return {
     auth: {
@@ -49,7 +50,7 @@ const createMockSupabase = () => {
         select: () => mockQueryBuilder
       }),
       update: () => mockQueryBuilder,
-      delete: () => mockDeleteBuilder
+      delete: () => createMockDeleteBuilder()
     })
   }
 }
