@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
@@ -13,21 +12,6 @@ console.log('Supabase config:', {
 const createMockSupabase = () => {
   const mockError = { message: 'Supabase not configured' }
   
-  const createMockQuery = () => ({
-    eq: () => createMockQuery(),
-    order: () => createMockQuery(),
-    select: () => createMockQuery(),
-    single: () => createMockQuery(),
-    insert: () => createMockQuery(),
-    update: () => createMockQuery(),
-    delete: () => createMockQuery(),
-    // Remove the then method and make these actual promises
-  })
-
-  // Make the final query methods return actual promises
-  const createFinalQuery = (data: any = null, error: any = null) => 
-    Promise.resolve({ data, error })
-
   return {
     auth: {
       getSession: () => Promise.resolve({ data: { session: null }, error: null }),
@@ -36,38 +20,30 @@ const createMockSupabase = () => {
       signInWithPassword: () => Promise.resolve({ data: null, error: mockError }),
       signOut: () => Promise.resolve({ error: null })
     },
-    from: () => ({
-      select: (columns: string) => {
-        const query = {
-          eq: () => query,
-          order: () => query,
-          single: () => createFinalQuery(null, mockError)
-        }
-        return query
-      },
-      insert: (data: any) => {
-        const query = {
-          select: () => ({
-            single: () => createFinalQuery(null, mockError)
+    from: (table: string) => ({
+      select: (columns: string = '*') => ({
+        eq: (column: string, value: any) => ({
+          order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
+          single: () => Promise.resolve({ data: null, error: mockError })
+        }),
+        order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
+        single: () => Promise.resolve({ data: null, error: mockError })
+      }),
+      insert: (data: any) => ({
+        select: (columns: string = '*') => ({
+          single: () => Promise.resolve({ data: null, error: mockError })
+        })
+      }),
+      update: (data: any) => ({
+        eq: (column: string, value: any) => ({
+          select: (columns: string = '*') => ({
+            single: () => Promise.resolve({ data: null, error: mockError })
           })
-        }
-        return query
-      },
-      update: (data: any) => {
-        const query = {
-          eq: () => query,
-          select: () => ({
-            single: () => createFinalQuery(null, mockError)
-          })
-        }
-        return query
-      },
-      delete: () => {
-        const query = {
-          eq: () => createFinalQuery(null, null)
-        }
-        return query
-      }
+        })
+      }),
+      delete: () => ({
+        eq: (column: string, value: any) => Promise.resolve({ error: null })
+      })
     })
   }
 }
