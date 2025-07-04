@@ -27,12 +27,13 @@ const createMockSupabase = () => {
   // Mock delete query builder that maintains proper chainability
   const mockDeleteBuilder = {
     eq: (column: string, value: any) => {
-      // Return an object that can be chained further or awaited
-      return {
+      // Return an object that can be chained with additional eq calls
+      const chainableDelete = {
         eq: (column2: string, value2: any) => Promise.resolve(mockDeleteSuccess),
         then: (resolve: any) => Promise.resolve(mockDeleteSuccess).then(resolve),
         catch: (reject: any) => Promise.resolve(mockDeleteSuccess).catch(reject)
       }
+      return chainableDelete
     }
   }
   
@@ -88,6 +89,36 @@ export type Database = {
           created_at?: string
           updated_at?: string
           user_id?: string
+        }
+      }
+      // Adicionar tabela de perfis de usuário se necessário
+      profiles: {
+        Row: {
+          id: string
+          user_id: string
+          email: string
+          full_name?: string
+          avatar_url?: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          email: string
+          full_name?: string
+          avatar_url?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          email?: string
+          full_name?: string
+          avatar_url?: string
+          created_at?: string
+          updated_at?: string
         }
       }
     }

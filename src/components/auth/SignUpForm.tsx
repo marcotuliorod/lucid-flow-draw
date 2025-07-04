@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useSignUp } from '@/hooks/useSignUp'
-import { Eye, EyeOff, CheckCircle } from 'lucide-react'
+import { Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react'
 
 interface SignUpFormProps {
   onSuccess?: () => void
@@ -59,7 +59,7 @@ const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
     const result = await handleSignUp(email, password)
     
     if (result.success) {
-      setSuccess('Cadastro realizado com sucesso! Verifique seu email para confirmar a conta.')
+      setSuccess('Cadastro realizado com sucesso!')
       // Limpar formulário
       setEmail('')
       setPassword('')

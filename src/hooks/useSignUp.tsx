@@ -2,10 +2,12 @@
 import { useState } from 'react'
 import { useAuth } from './useAuth'
 import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
 
 export const useSignUp = () => {
   const [loading, setLoading] = useState(false)
   const { signUp } = useAuth()
+  const navigate = useNavigate()
 
   const handleSignUp = async (email: string, password: string) => {
     setLoading(true)
@@ -38,16 +40,19 @@ export const useSignUp = () => {
       if (error) {
         console.error('useSignUp: Error during signup:', error)
         
-        // Tratamento de erros específicos
-        if (error.message?.includes('User already registered')) {
+        // Tratamento de erros específicos do Supabase
+        if (error.message?.includes('User already registered') || error.message?.includes('already been registered')) {
           toast.error('Este email já está cadastrado. Tente fazer login.')
           return { success: false, error: 'Email já cadastrado' }
         } else if (error.message?.includes('Invalid email')) {
           toast.error('Email inválido')
           return { success: false, error: 'Email inválido' }
-        } else if (error.message?.includes('Password')) {
+        } else if (error.message?.includes('Password') || error.message?.includes('password')) {
           toast.error('Senha deve ter pelo menos 6 caracteres')
           return { success: false, error: 'Senha inválida' }
+        } else if (error.message?.includes('not configured')) {
+          toast.error('Sistema de autenticação não configurado. Entre em contato com o suporte.')
+          return { success: false, error: 'Sistema não configurado' }
         } else {
           toast.error('Erro ao criar conta. Tente novamente.')
           return { success: false, error: error.message }
@@ -56,10 +61,21 @@ export const useSignUp = () => {
 
       if (data?.user) {
         console.log('useSignUp: User created successfully:', data.user.email)
-        toast.success('Conta criada com sucesso! Verifique seu email para confirmar.')
+        
+        // Se o usuário foi criado e confirmado automaticamente
+        if (data.user.email_confirmed_at || data.session) {
+          toast.success('Conta criada com sucesso! Redirecionando...')
+          setTimeout(() => {
+            navigate('/dashboard')
+          }, 1500)
+        } else {
+          toast.success('Conta criada! Verifique seu email para confirmar antes de fazer login.')
+        }
+        
         return { success: true, data }
       }
 
+      // Caso padrão - cadastro realizado mas precisa confirmar email
       toast.success('Cadastro realizado! Verifique seu email para confirmar a conta.')
       return { success: true, data }
       

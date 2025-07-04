@@ -8,67 +8,55 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/hooks/useAuth'
-import { PenTool, Eye, EyeOff } from 'lucide-react'
+import { useSignIn } from '@/hooks/useSignIn'
+import { PenTool, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import SignUpForm from './SignUpForm'
 
 const LoginForm = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const { signIn, signInWithGoogle, signInWithFacebook } = useAuth()
+  const { signInWithGoogle, signInWithFacebook } = useAuth()
+  const { handleSignIn, loading: signInLoading } = useSignIn()
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const onSignInSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     setError(null)
 
-    if (!email || !password) {
-      setError('Email e senha são obrigatórios')
-      setLoading(false)
-      return
-    }
-
-    const { error } = await signIn(email, password)
+    const result = await handleSignIn(email, password)
     
-    if (error) {
-      console.error('LoginForm: SignIn error:', error)
-      
-      if (error.message?.includes('Invalid login credentials')) {
-        setError('Email ou senha incorretos')
-      } else if (error.message?.includes('Email not confirmed')) {
-        setError('Confirme seu email antes de fazer login')
-      } else {
-        setError('Erro ao fazer login. Tente novamente.')
-      }
+    if (!result.success) {
+      setError(result.error || 'Erro ao fazer login')
     }
-    
-    setLoading(false)
   }
 
   const handleGoogleSignIn = async () => {
-    setLoading(true)
     setError(null)
     
     const { error } = await signInWithGoogle()
     
     if (error) {
-      setError(error.message)
-      setLoading(false)
+      if (error.message?.includes('not configured')) {
+        setError('Login com Google não está configurado')
+      } else {
+        setError('Erro ao fazer login com Google')
+      }
     }
   }
 
   const handleFacebookSignIn = async () => {
-    setLoading(true)
     setError(null)
     
     const { error } = await signInWithFacebook()
     
     if (error) {
-      setError(error.message)
-      setLoading(false)
+      if (error.message?.includes('not configured')) {
+        setError('Login com Facebook não está configurado')
+      } else {
+        setError('Erro ao fazer login com Facebook')
+      }
     }
   }
 
@@ -92,7 +80,7 @@ const LoginForm = () => {
           <Button
             type="button"
             onClick={handleGoogleSignIn}
-            disabled={loading}
+            disabled={signInLoading}
             className="w-full bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 font-medium rounded-lg"
           >
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -107,7 +95,7 @@ const LoginForm = () => {
           <Button
             type="button"
             onClick={handleFacebookSignIn}
-            disabled={loading}
+            disabled={signInLoading}
             className="w-full bg-[#1877F2] hover:bg-[#166FE5] text-white font-medium rounded-lg"
           >
             <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
@@ -135,11 +123,11 @@ const LoginForm = () => {
           </TabsList>
 
           <TabsContent value="signin">
-            <form onSubmit={handleSignIn} className="space-y-4">
+            <form onSubmit={onSignInSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="signin-email">Email</Label>
                 <Input
-                  id="email"
+                  id="signin-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -149,10 +137,10 @@ const LoginForm = () => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
+                <Label htmlFor="signin-password">Senha</Label>
                 <div className="relative">
                   <Input
-                    id="password"
+                    id="signin-password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -177,21 +165,25 @@ const LoginForm = () => {
               </div>
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={signInLoading}
                 className="w-full bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 hover:from-blue-700 hover:via-cyan-600 hover:to-teal-600 text-white font-medium rounded-lg"
               >
-                {loading ? 'Entrando...' : 'Entrar'}
+                {signInLoading ? 'Entrando...' : 'Entrar'}
               </Button>
             </form>
           </TabsContent>
 
           <TabsContent value="signup">
-            <SignUpForm />
+            <SignUpForm onSuccess={() => {
+              // Limpar qualquer erro quando o cadastro for bem-sucedido
+              setError(null)
+            }} />
           </TabsContent>
         </Tabs>
 
         {error && (
           <Alert className="mt-4 border-red-200 bg-red-50 dark:bg-red-900/20">
+            <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400" />
             <AlertDescription className="text-red-700 dark:text-red-400">
               {error}
             </AlertDescription>
