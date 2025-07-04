@@ -17,7 +17,8 @@ import {
   Save,
   ArrowLeft,
   Diamond,
-  MousePointer
+  MousePointer,
+  LogOut
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
@@ -43,6 +44,7 @@ const ProcessEditor = () => {
   const [elements, setElements] = useState<CanvasElement[]>([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const [currentPos, setCurrentPos] = useState({ x: 0, y: 0 });
 
   const tools = [
     { id: 'select', icon: MousePointer, label: 'Selecionar' },
@@ -63,7 +65,20 @@ const ProcessEditor = () => {
     const y = e.clientY - rect.top;
     
     setStartPos({ x, y });
+    setCurrentPos({ x, y });
     setIsDrawing(true);
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent) => {
+    if (!isDrawing || selectedTool === 'select') return;
+
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    setCurrentPos({ x, y });
   };
 
   const handleCanvasMouseUp = (e: React.MouseEvent) => {
@@ -108,6 +123,48 @@ const ProcessEditor = () => {
 
   const handleSave = () => {
     console.log('Salvando projeto...');
+  };
+
+  const handleLogout = () => {
+    console.log('Fazendo logout...');
+    navigate('/');
+  };
+
+  // Renderizar elemento de preview durante o desenho
+  const renderPreviewElement = () => {
+    if (!isDrawing || selectedTool === 'select') return null;
+
+    const width = Math.abs(currentPos.x - startPos.x);
+    const height = Math.abs(currentPos.y - startPos.y);
+
+    if (width < 10 && height < 10) return null;
+
+    const x = Math.min(startPos.x, currentPos.x);
+    const y = Math.min(startPos.y, currentPos.y);
+
+    return (
+      <div
+        className="absolute border-2 border-dashed border-blue-500 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-900/10 flex items-center justify-center text-sm font-light text-blue-900 dark:text-blue-100 pointer-events-none"
+        style={{
+          left: x,
+          top: y,
+          width: width || 100,
+          height: height || 60,
+          borderRadius: selectedTool === 'circle' ? '50%' : selectedTool === 'diamond' ? '0' : '12px',
+          transform: selectedTool === 'diamond' ? 'rotate(45deg)' : 'none'
+        }}
+      >
+        {selectedTool === 'arrow' && (
+          <div className="flex items-center justify-center w-full h-full">
+            <div className="flex items-center">
+              <div className="w-4 h-0.5 bg-blue-500 dark:bg-blue-400"></div>
+              <div className="w-0 h-0 border-l-4 border-l-blue-500 dark:border-l-blue-400 border-t-2 border-b-2 border-t-transparent border-b-transparent"></div>
+            </div>
+          </div>
+        )}
+        {selectedTool !== 'arrow' && (selectedTool === 'text' ? 'Texto' : selectedTool)}
+      </div>
+    );
   };
 
   return (
@@ -160,6 +217,15 @@ const ProcessEditor = () => {
               <Download className="h-4 w-4 mr-2" />
               Exportar PDF
             </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleLogout}
+              className="border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-light rounded-lg hover:bg-red-50 hover:text-red-600 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:text-red-400 dark:hover:border-red-600"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair
+            </Button>
             <ThemeToggle />
           </div>
         </div>
@@ -195,6 +261,7 @@ const ProcessEditor = () => {
             ref={canvasRef}
             className="w-full h-full bg-white dark:bg-slate-800 relative cursor-crosshair"
             onMouseDown={handleCanvasMouseDown}
+            onMouseMove={handleCanvasMouseMove}
             onMouseUp={handleCanvasMouseUp}
             style={{
               backgroundImage: `
@@ -203,6 +270,7 @@ const ProcessEditor = () => {
               backgroundSize: '24px 24px'
             }}
           >
+            {/* Elementos existentes */}
             {elements.map((element) => (
               <div
                 key={element.id}
@@ -216,9 +284,21 @@ const ProcessEditor = () => {
                   transform: element.type === 'diamond' ? 'rotate(45deg)' : 'none'
                 }}
               >
-                {element.text || element.type}
+                {element.type === 'arrow' ? (
+                  <div className="flex items-center justify-center w-full h-full">
+                    <div className="flex items-center">
+                      <div className="w-8 h-1 bg-blue-500 dark:bg-blue-400 rounded-full"></div>
+                      <div className="w-0 h-0 border-l-8 border-l-blue-500 dark:border-l-blue-400 border-t-4 border-b-4 border-t-transparent border-b-transparent ml-1"></div>
+                    </div>
+                  </div>
+                ) : (
+                  element.text || element.type
+                )}
               </div>
             ))}
+
+            {/* Elemento de preview durante o desenho */}
+            {renderPreviewElement()}
 
             {/* Instructions */}
             {elements.length === 0 && (
