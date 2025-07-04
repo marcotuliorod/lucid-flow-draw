@@ -13,28 +13,6 @@ console.log('Supabase config:', {
 const createMockSupabase = () => {
   const mockError = { message: 'Supabase not configured' }
   
-  // Create a consistent chainable query builder
-  const createChainableQuery = () => {
-    const chainable = {
-      eq: (column: string, value: any) => ({
-        eq: (column: string, value: any) => chainable,
-        order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
-        single: () => Promise.resolve({ data: null, error: mockError }),
-        select: (columns: string = '*') => ({
-          single: () => Promise.resolve({ data: null, error: mockError }),
-          eq: (column: string, value: any) => chainable
-        })
-      }),
-      order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
-      single: () => Promise.resolve({ data: null, error: mockError }),
-      select: (columns: string = '*') => ({
-        single: () => Promise.resolve({ data: null, error: mockError }),
-        eq: (column: string, value: any) => chainable
-      })
-    }
-    return chainable
-  }
-  
   return {
     auth: {
       getSession: () => Promise.resolve({ data: { session: null }, error: null }),
@@ -46,7 +24,10 @@ const createMockSupabase = () => {
     from: (table: string) => ({
       select: (columns: string = '*') => ({
         eq: (column: string, value: any) => ({
-          eq: (column: string, value: any) => createChainableQuery(),
+          eq: (column: string, value: any) => ({
+            order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
+            single: () => Promise.resolve({ data: null, error: mockError })
+          }),
           order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
           single: () => Promise.resolve({ data: null, error: mockError })
         }),
