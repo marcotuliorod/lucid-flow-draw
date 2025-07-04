@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -32,6 +31,8 @@ interface CanvasElement {
   height: number;
   text?: string;
   color: string;
+  startElementId?: string;
+  endElementId?: string;
 }
 
 const ProcessEditor = () => {
@@ -42,9 +43,13 @@ const ProcessEditor = () => {
   const [projectName, setProjectName] = useState("Novo Processo");
   const [selectedTool, setSelectedTool] = useState<string>("select");
   const [elements, setElements] = useState<CanvasElement[]>([]);
+  const [selectedElement, setSelectedElement] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState<string | null>(null);
+  const [tempText, setTempText] = useState("");
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const [currentPos, setCurrentPos] = useState({ x: 0, y: 0 });
+  const [nearElement, setNearElement] = useState<string | null>(null);
 
   const tools = [
     { id: 'select', icon: MousePointer, label: 'Selecionar' },
@@ -55,30 +60,75 @@ const ProcessEditor = () => {
     { id: 'text', icon: Type, label: 'Texto' }
   ];
 
+  // Função para encontrar elemento próximo do cursor
+  const findNearElement = (x: number, y: number) => {
+    const threshold = 30;
+    return elements.find(element => {
+      if (element.type === 'arrow') return false;
+      
+      const centerX = element.x + element.width / 2;
+      const centerY = element.y + element.height / 2;
+      const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
+      
+      return distance < threshold;
+    });
+  };
+
+  // Função para obter ponto de conexão de um elemento
+  const getConnectionPoint = (element: CanvasElement) => {
+    return {
+      x: element.x + element.width / 2,
+      y: element.y + element.height / 2
+    };
+  };
+
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
-    if (selectedTool === 'select') return;
-    
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
 
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+
+    if (selectedTool === 'select') {
+      // Verificar se clicou em um elemento
+      const clickedElement = elements.find(element => 
+        x >= element.x && x <= element.x + element.width &&
+        y >= element.y && y <= element.y + element.height
+      );
+      
+      if (clickedElement) {
+        setSelectedElement(clickedElement.id);
+      } else {
+        setSelectedElement(null);
+      }
+      return;
+    }
     
     setStartPos({ x, y });
     setCurrentPos({ x, y });
     setIsDrawing(true);
+
+    if (selectedTool === 'arrow') {
+      const nearEl = findNearElement(x, y);
+      setNearElement(nearEl?.id || null);
+    }
   };
 
   const handleCanvasMouseMove = (e: React.MouseEvent) => {
-    if (!isDrawing || selectedTool === 'select') return;
-
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
 
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
-    setCurrentPos({ x, y });
+
+    if (isDrawing && selectedTool !== 'select') {
+      setCurrentPos({ x, y });
+
+      if (selectedTool === 'arrow') {
+        const nearEl = findNearElement(x, y);
+        setNearElement(nearEl?.id || null);
+      }
+    }
   };
 
   const handleCanvasMouseUp = (e: React.MouseEvent) => {
@@ -90,26 +140,78 @@ const ProcessEditor = () => {
     const endX = e.clientX - rect.left;
     const endY = e.clientY - rect.top;
 
-    const width = Math.abs(endX - startPos.x);
-    const height = Math.abs(endY - startPos.y);
+    if (selectedTool === 'arrow') {
+      const startElement = findNearElement(startPos.x, startPos.y);
+      const endElement = findNearElement(endX, endY);
 
-    if (width > 10 || height > 10) {
-      const newElement: CanvasElement = {
-        id: Date.now().toString(),
-        type: selectedTool as any,
-        x: Math.min(startPos.x, endX),
-        y: Math.min(startPos.y, endY),
-        width: width || 100,
-        height: height || 60,
-        text: selectedTool === 'text' ? 'Texto' : '',
-        color: '#3B82F6'
-      };
+      if (startElement && endElement && startElement.id !== endElement.id) {
+        const startPoint = getConnectionPoint(startElement);
+        const endPoint = getConnectionPoint(endElement);
 
-      setElements([...elements, newElement]);
+        const newArrow: CanvasElement = {
+          id: Date.now().toString(),
+          type: 'arrow',
+          x: startPoint.x,
+          y: startPoint.y,
+          width: Math.abs(endPoint.x - startPoint.x),
+          height: Math.abs(endPoint.y - startPoint.y),
+          color: '#3B82F6',
+          startElementId: startElement.id,
+          endElementId: endElement.id
+        };
+
+        setElements([...elements, newArrow]);
+      }
+    } else {
+      const width = Math.abs(endX - startPos.x);
+      const height = Math.abs(endY - startPos.y);
+
+      if (width > 10 || height > 10) {
+        const newElement: CanvasElement = {
+          id: Date.now().toString(),
+          type: selectedTool as any,
+          x: Math.min(startPos.x, endX),
+          y: Math.min(startPos.y, endY),
+          width: width || 100,
+          height: height || 60,
+          text: selectedTool === 'text' ? 'Texto' : `${selectedTool}`,
+          color: '#3B82F6'
+        };
+
+        setElements([...elements, newElement]);
+      }
     }
 
     setIsDrawing(false);
+    setNearElement(null);
     setSelectedTool('select');
+  };
+
+  const handleElementDoubleClick = (elementId: string) => {
+    const element = elements.find(el => el.id === elementId);
+    if (element && element.type !== 'arrow') {
+      setEditingText(elementId);
+      setTempText(element.text || '');
+    }
+  };
+
+  const handleTextSubmit = () => {
+    if (editingText) {
+      setElements(elements.map(el => 
+        el.id === editingText ? { ...el, text: tempText } : el
+      ));
+      setEditingText(null);
+      setTempText('');
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleTextSubmit();
+    } else if (e.key === 'Escape') {
+      setEditingText(null);
+      setTempText('');
+    }
   };
 
   const handleExportPDF = () => {
@@ -130,9 +232,67 @@ const ProcessEditor = () => {
     navigate('/');
   };
 
-  // Renderizar elemento de preview durante o desenho
+  // Renderizar linha da seta durante o desenho
+  const renderArrowPreview = () => {
+    if (!isDrawing || selectedTool !== 'arrow') return null;
+
+    const startElement = findNearElement(startPos.x, startPos.y);
+    const endElement = findNearElement(currentPos.x, currentPos.y);
+
+    const startPoint = startElement ? getConnectionPoint(startElement) : startPos;
+    const endPoint = endElement ? getConnectionPoint(endElement) : currentPos;
+
+    const angle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
+    const length = Math.sqrt(Math.pow(endPoint.x - startPoint.x, 2) + Math.pow(endPoint.y - startPoint.y, 2));
+
+    return (
+      <div className="absolute pointer-events-none">
+        {/* Linha da seta */}
+        <div
+          className="absolute bg-blue-500 dark:bg-blue-400"
+          style={{
+            left: startPoint.x,
+            top: startPoint.y - 1,
+            width: length,
+            height: 2,
+            transformOrigin: '0 50%',
+            transform: `rotate(${angle}rad)`
+          }}
+        />
+        {/* Ponta da seta */}
+        <div
+          className="absolute w-0 h-0 border-l-8 border-l-blue-500 dark:border-l-blue-400 border-t-4 border-b-4 border-t-transparent border-b-transparent"
+          style={{
+            left: endPoint.x - 8,
+            top: endPoint.y - 4
+          }}
+        />
+        {/* Indicadores de conexão */}
+        {startElement && (
+          <div
+            className="absolute w-3 h-3 bg-green-500 rounded-full border-2 border-white"
+            style={{
+              left: startPoint.x - 6,
+              top: startPoint.y - 6
+            }}
+          />
+        )}
+        {endElement && (
+          <div
+            className="absolute w-3 h-3 bg-green-500 rounded-full border-2 border-white"
+            style={{
+              left: endPoint.x - 6,
+              top: endPoint.y - 6
+            }}
+          />
+        )}
+      </div>
+    );
+  };
+
+  // Renderizar elemento de preview durante o desenho (exceto seta)
   const renderPreviewElement = () => {
-    if (!isDrawing || selectedTool === 'select') return null;
+    if (!isDrawing || selectedTool === 'select' || selectedTool === 'arrow') return null;
 
     const width = Math.abs(currentPos.x - startPos.x);
     const height = Math.abs(currentPos.y - startPos.y);
@@ -154,15 +314,7 @@ const ProcessEditor = () => {
           transform: selectedTool === 'diamond' ? 'rotate(45deg)' : 'none'
         }}
       >
-        {selectedTool === 'arrow' && (
-          <div className="flex items-center justify-center w-full h-full">
-            <div className="flex items-center">
-              <div className="w-4 h-0.5 bg-blue-500 dark:bg-blue-400"></div>
-              <div className="w-0 h-0 border-l-4 border-l-blue-500 dark:border-l-blue-400 border-t-2 border-b-2 border-t-transparent border-b-transparent"></div>
-            </div>
-          </div>
-        )}
-        {selectedTool !== 'arrow' && (selectedTool === 'text' ? 'Texto' : selectedTool)}
+        {selectedTool === 'text' ? 'Texto' : selectedTool}
       </div>
     );
   };
@@ -271,33 +423,84 @@ const ProcessEditor = () => {
             }}
           >
             {/* Elementos existentes */}
-            {elements.map((element) => (
-              <div
-                key={element.id}
-                className="absolute border border-blue-500 dark:border-blue-400 bg-blue-50/80 dark:bg-blue-900/20 backdrop-blur-sm flex items-center justify-center text-sm font-light text-blue-900 dark:text-blue-100 cursor-move hover:bg-blue-100/80 dark:hover:bg-blue-800/30 transition-all duration-200"
-                style={{
-                  left: element.x,
-                  top: element.y,
-                  width: element.width,
-                  height: element.height,
-                  borderRadius: element.type === 'circle' ? '50%' : element.type === 'diamond' ? '0' : '12px',
-                  transform: element.type === 'diamond' ? 'rotate(45deg)' : 'none'
-                }}
-              >
-                {element.type === 'arrow' ? (
-                  <div className="flex items-center justify-center w-full h-full">
-                    <div className="flex items-center">
-                      <div className="w-8 h-1 bg-blue-500 dark:bg-blue-400 rounded-full"></div>
-                      <div className="w-0 h-0 border-l-8 border-l-blue-500 dark:border-l-blue-400 border-t-4 border-b-4 border-t-transparent border-b-transparent ml-1"></div>
-                    </div>
-                  </div>
-                ) : (
-                  element.text || element.type
-                )}
-              </div>
-            ))}
+            {elements.map((element) => {
+              if (element.type === 'arrow') {
+                const startElement = elements.find(el => el.id === element.startElementId);
+                const endElement = elements.find(el => el.id === element.endElementId);
+                
+                if (!startElement || !endElement) return null;
 
-            {/* Elemento de preview durante o desenho */}
+                const startPoint = getConnectionPoint(startElement);
+                const endPoint = getConnectionPoint(endElement);
+                
+                const angle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x);
+                const length = Math.sqrt(Math.pow(endPoint.x - startPoint.x, 2) + Math.pow(endPoint.y - startPoint.y, 2));
+
+                return (
+                  <div key={element.id} className="absolute pointer-events-none">
+                    {/* Linha da seta */}
+                    <div
+                      className={`absolute ${selectedElement === element.id ? 'bg-orange-500' : 'bg-blue-500 dark:bg-blue-400'}`}
+                      style={{
+                        left: startPoint.x,
+                        top: startPoint.y - 1,
+                        width: length,
+                        height: 2,
+                        transformOrigin: '0 50%',
+                        transform: `rotate(${angle}rad)`
+                      }}
+                    />
+                    {/* Ponta da seta */}
+                    <div
+                      className={`absolute w-0 h-0 ${selectedElement === element.id ? 'border-l-orange-500 border-l-8' : 'border-l-blue-500 dark:border-l-blue-400 border-l-8'} border-t-4 border-b-4 border-t-transparent border-b-transparent`}
+                      style={{
+                        left: endPoint.x - 8,
+                        top: endPoint.y - 4
+                      }}
+                    />
+                  </div>
+                );
+              }
+
+              return (
+                <div
+                  key={element.id}
+                  className={`absolute border cursor-move hover:bg-blue-100/80 dark:hover:bg-blue-800/30 transition-all duration-200 flex items-center justify-center text-sm font-light ${
+                    selectedElement === element.id 
+                      ? 'border-orange-500 bg-orange-50/80 dark:bg-orange-900/20 text-orange-900 dark:text-orange-100'
+                      : 'border-blue-500 dark:border-blue-400 bg-blue-50/80 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100'
+                  }`}
+                  style={{
+                    left: element.x,
+                    top: element.y,
+                    width: element.width,
+                    height: element.height,
+                    borderRadius: element.type === 'circle' ? '50%' : element.type === 'diamond' ? '0' : '12px',
+                    transform: element.type === 'diamond' ? 'rotate(45deg)' : 'none'
+                  }}
+                  onClick={() => setSelectedElement(element.id)}
+                  onDoubleClick={() => handleElementDoubleClick(element.id)}
+                >
+                  {editingText === element.id ? (
+                    <Input
+                      value={tempText}
+                      onChange={(e) => setTempText(e.target.value)}
+                      onBlur={handleTextSubmit}
+                      onKeyDown={handleKeyPress}
+                      className="w-full h-full text-center border-none bg-transparent text-sm p-0 focus-visible:ring-0"
+                      autoFocus
+                    />
+                  ) : (
+                    element.text || element.type
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Preview da seta durante o desenho */}
+            {renderArrowPreview()}
+
+            {/* Elemento de preview durante o desenho (exceto seta) */}
             {renderPreviewElement()}
 
             {/* Instructions */}
@@ -312,7 +515,8 @@ const ProcessEditor = () => {
                       Comece a desenhar seu processo
                     </h3>
                     <p className="text-slate-600 dark:text-slate-300 mb-8 font-light max-w-md leading-relaxed">
-                      Selecione uma ferramenta na barra lateral e clique e arraste para criar elementos
+                      Selecione uma ferramenta na barra lateral e clique e arraste para criar elementos. 
+                      Dê duplo clique nos elementos para editar o texto.
                     </p>
                     <div className="flex justify-center space-x-3">
                       {tools.slice(1, 4).map((tool) => {
