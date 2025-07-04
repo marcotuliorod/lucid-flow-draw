@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PenTool, Users, Download, Zap, ArrowRight, CheckCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const Index = () => {
@@ -32,10 +33,11 @@ const Index = () => {
                 Recursos
               </Button>
               <Button 
-                onClick={() => navigate('/login')}
+                asChild
+                variant="ghost"
                 className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white font-light"
               >
-                Entrar
+                <Link to="/login">Entrar</Link>
               </Button>
               <ThemeToggle />
             </div>

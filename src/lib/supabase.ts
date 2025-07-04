@@ -9,9 +9,25 @@ console.log('Supabase config:', {
   key: supabaseAnonKey ? 'Set' : 'Missing' 
 })
 
-// Create a more complete mock client if env vars are missing
+// Create a simple mock client if env vars are missing
 const createMockSupabase = () => {
   const mockError = { message: 'Supabase not configured' }
+  const mockSuccess = { data: [], error: null }
+  const mockSingle = { data: null, error: mockError }
+  const mockDeleteSuccess = { error: null }
+  
+  // Mock query builder that returns promises and maintains chainability
+  const mockQueryBuilder = {
+    eq: () => mockQueryBuilder,
+    order: () => Promise.resolve(mockSuccess),
+    single: () => Promise.resolve(mockSingle),
+    select: () => mockQueryBuilder
+  }
+
+  // Mock delete query builder that maintains proper chainability
+  const mockDeleteBuilder = {
+    eq: (column: string, value: any) => Promise.resolve(mockDeleteSuccess)
+  }
   
   return {
     auth: {
@@ -19,43 +35,16 @@ const createMockSupabase = () => {
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
       signUp: () => Promise.resolve({ data: null, error: mockError }),
       signInWithPassword: () => Promise.resolve({ data: null, error: mockError }),
+      signInWithOAuth: () => Promise.resolve({ data: null, error: mockError }),
       signOut: () => Promise.resolve({ error: null })
     },
-    from: (table: string) => ({
-      select: (columns: string = '*') => ({
-        eq: (column: string, value: any) => ({
-          eq: (column: string, value: any) => ({
-            order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
-            single: () => Promise.resolve({ data: null, error: mockError })
-          }),
-          order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
-          single: () => Promise.resolve({ data: null, error: mockError })
-        }),
-        order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
-        single: () => Promise.resolve({ data: null, error: mockError })
+    from: () => ({
+      select: () => mockQueryBuilder,
+      insert: () => ({
+        select: () => mockQueryBuilder
       }),
-      insert: (data: any) => ({
-        select: (columns: string = '*') => ({
-          single: () => Promise.resolve({ data: null, error: mockError })
-        })
-      }),
-      update: (data: any) => ({
-        eq: (column: string, value: any) => ({
-          eq: (column: string, value: any) => ({
-            select: (columns: string = '*') => ({
-              single: () => Promise.resolve({ data: null, error: mockError })
-            })
-          }),
-          select: (columns: string = '*') => ({
-            single: () => Promise.resolve({ data: null, error: mockError })
-          })
-        })
-      }),
-      delete: () => ({
-        eq: (column: string, value: any) => ({
-          eq: (column: string, value: any) => Promise.resolve({ error: null })
-        })
-      })
+      update: () => mockQueryBuilder,
+      delete: () => mockDeleteBuilder
     })
   }
 }
