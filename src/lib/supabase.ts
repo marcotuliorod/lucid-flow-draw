@@ -16,10 +16,18 @@ const createMockSupabase = () => {
   // Create a chainable query builder that supports all operations
   const createQueryBuilder = () => {
     const queryBuilder = {
-      eq: (column: string, value: any) => queryBuilder,
+      eq: (column: string, value: any) => ({
+        order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
+        single: () => Promise.resolve({ data: null, error: mockError }),
+        select: (columns: string = '*') => ({
+          single: () => Promise.resolve({ data: null, error: mockError })
+        })
+      }),
       order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
       single: () => Promise.resolve({ data: null, error: mockError }),
-      select: (columns: string = '*') => queryBuilder
+      select: (columns: string = '*') => ({
+        single: () => Promise.resolve({ data: null, error: mockError })
+      })
     }
     return queryBuilder
   }
@@ -33,17 +41,14 @@ const createMockSupabase = () => {
       signOut: () => Promise.resolve({ error: null })
     },
     from: (table: string) => ({
-      select: (columns: string = '*') => {
-        const queryBuilder = createQueryBuilder()
-        return {
-          eq: (column: string, value: any) => ({
-            order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
-            single: () => Promise.resolve({ data: null, error: mockError })
-          }),
+      select: (columns: string = '*') => ({
+        eq: (column: string, value: any) => ({
           order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
           single: () => Promise.resolve({ data: null, error: mockError })
-        }
-      },
+        }),
+        order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
+        single: () => Promise.resolve({ data: null, error: mockError })
+      }),
       insert: (data: any) => ({
         select: (columns: string = '*') => ({
           single: () => Promise.resolve({ data: null, error: mockError })
