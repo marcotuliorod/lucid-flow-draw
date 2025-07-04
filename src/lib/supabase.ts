@@ -15,6 +15,14 @@ const createMockSupabase = () => {
   const mockSuccess = { data: [], error: null }
   const mockSingle = { data: null, error: mockError }
   
+  // Create chainable mock methods without circular references
+  const createMockChain = () => ({
+    eq: () => createMockChain(),
+    order: () => Promise.resolve(mockSuccess),
+    single: () => Promise.resolve(mockSingle),
+    select: () => createMockChain()
+  })
+  
   return {
     auth: {
       getSession: () => Promise.resolve({ data: { session: null }, error: null }),
@@ -23,41 +31,13 @@ const createMockSupabase = () => {
       signInWithPassword: () => Promise.resolve({ data: null, error: mockError }),
       signOut: () => Promise.resolve({ error: null })
     },
-    from: (table: string) => ({
-      select: (columns: string = '*') => ({
-        eq: (column: string, value: any) => ({
-          eq: (column: string, value: any) => ({
-            order: (column: string, options?: any) => Promise.resolve(mockSuccess),
-            single: () => Promise.resolve(mockSingle)
-          }),
-          order: (column: string, options?: any) => Promise.resolve(mockSuccess),
-          single: () => Promise.resolve(mockSingle)
-        }),
-        order: (column: string, options?: any) => Promise.resolve(mockSuccess),
-        single: () => Promise.resolve(mockSingle)
+    from: () => ({
+      select: () => createMockChain(),
+      insert: () => ({
+        select: () => createMockChain()
       }),
-      insert: (data: any) => ({
-        select: (columns: string = '*') => ({
-          single: () => Promise.resolve(mockSingle)
-        })
-      }),
-      update: (data: any) => ({
-        eq: (column: string, value: any) => ({
-          eq: (column: string, value: any) => ({
-            select: (columns: string = '*') => ({
-              single: () => Promise.resolve(mockSingle)
-            })
-          }),
-          select: (columns: string = '*') => ({
-            single: () => Promise.resolve(mockSingle)
-          })
-        })
-      }),
-      delete: () => ({
-        eq: (column: string, value: any) => ({
-          eq: (column: string, value: any) => Promise.resolve({ error: null })
-        })
-      })
+      update: () => createMockChain(),
+      delete: () => createMockChain()
     })
   }
 }
