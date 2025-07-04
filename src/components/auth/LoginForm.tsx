@@ -8,43 +8,41 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/hooks/useAuth'
-import { PenTool } from 'lucide-react'
+import { PenTool, Eye, EyeOff } from 'lucide-react'
+import SignUpForm from './SignUpForm'
 
 const LoginForm = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
 
-  const { signIn, signUp, signInWithGoogle, signInWithFacebook } = useAuth()
+  const { signIn, signInWithGoogle, signInWithFacebook } = useAuth()
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
+    if (!email || !password) {
+      setError('Email e senha são obrigatórios')
+      setLoading(false)
+      return
+    }
+
     const { error } = await signIn(email, password)
     
     if (error) {
-      setError(error.message)
-    }
-    
-    setLoading(false)
-  }
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-    setSuccess(null)
-
-    const { error } = await signUp(email, password)
-    
-    if (error) {
-      setError(error.message)
-    } else {
-      setSuccess('Cadastro realizado! Verifique seu email para confirmar a conta.')
+      console.error('LoginForm: SignIn error:', error)
+      
+      if (error.message?.includes('Invalid login credentials')) {
+        setError('Email ou senha incorretos')
+      } else if (error.message?.includes('Email not confirmed')) {
+        setError('Confirme seu email antes de fazer login')
+      } else {
+        setError('Erro ao fazer login. Tente novamente.')
+      }
     }
     
     setLoading(false)
@@ -60,7 +58,6 @@ const LoginForm = () => {
       setError(error.message)
       setLoading(false)
     }
-    // Don't set loading to false here as we're redirecting
   }
 
   const handleFacebookSignIn = async () => {
@@ -73,7 +70,6 @@ const LoginForm = () => {
       setError(error.message)
       setLoading(false)
     }
-    // Don't set loading to false here as we're redirecting
   }
 
   return (
@@ -149,18 +145,35 @@ const LoginForm = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   className="rounded-lg"
+                  placeholder="seu@email.com"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="rounded-lg"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="rounded-lg pr-10"
+                    placeholder="Sua senha"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-slate-500" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-slate-500" />
+                    )}
+                  </Button>
+                </div>
               </div>
               <Button
                 type="submit"
@@ -173,38 +186,7 @@ const LoginForm = () => {
           </TabsContent>
 
           <TabsContent value="signup">
-            <form onSubmit={handleSignUp} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signup-email">Email</Label>
-                <Input
-                  id="signup-email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="rounded-lg"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="signup-password">Senha</Label>
-                <Input
-                  id="signup-password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="rounded-lg"
-                />
-              </div>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 hover:from-emerald-700 hover:via-teal-600 hover:to-cyan-600 text-white font-medium rounded-lg"
-              >
-                {loading ? 'Cadastrando...' : 'Cadastrar'}
-              </Button>
-            </form>
+            <SignUpForm />
           </TabsContent>
         </Tabs>
 
@@ -212,14 +194,6 @@ const LoginForm = () => {
           <Alert className="mt-4 border-red-200 bg-red-50 dark:bg-red-900/20">
             <AlertDescription className="text-red-700 dark:text-red-400">
               {error}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {success && (
-          <Alert className="mt-4 border-green-200 bg-green-50 dark:bg-green-900/20">
-            <AlertDescription className="text-green-700 dark:text-green-400">
-              {success}
             </AlertDescription>
           </Alert>
         )}
