@@ -15,7 +15,7 @@ const createMockSupabase = () => {
   const mockSuccess = { data: [], error: null }
   const mockSingle = { data: null, error: mockError }
   
-  // Mock query builder that returns promises
+  // Mock query builder that returns promises and maintains chainability
   const mockQueryBuilder = {
     eq: () => mockQueryBuilder,
     order: () => Promise.resolve(mockSuccess),
@@ -37,7 +37,7 @@ const createMockSupabase = () => {
         select: () => mockQueryBuilder
       }),
       update: () => mockQueryBuilder,
-      delete: () => Promise.resolve({ error: null })
+      delete: () => mockQueryBuilder
     })
   }
 }
