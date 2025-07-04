@@ -1,9 +1,9 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PenTool, Users, Download, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -21,22 +21,23 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200">
+      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <PenTool className="h-8 w-8 text-blue-600" />
-              <span className="text-2xl font-bold text-gray-900">ProcessFlow</span>
+              <PenTool className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">ProcessFlow</span>
             </div>
-            <div className="flex space-x-4">
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
                 Sobre
               </Button>
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-900">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">
                 Recursos
               </Button>
+              <ThemeToggle />
             </div>
           </div>
         </div>
@@ -45,25 +46,25 @@ const Index = () => {
       {/* Hero Section */}
       <main className="container mx-auto px-6 py-16">
         <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
+          <h1 className="text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
             Desenhe processos de forma
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-600"> simples</span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-green-600 dark:from-blue-400 dark:to-green-400"> simples</span>
           </h1>
-          <p className="text-xl text-gray-600 mb-12 leading-relaxed">
+          <p className="text-xl text-gray-600 dark:text-gray-300 mb-12 leading-relaxed">
             Crie, edite e compartilhe diagramas de processos de forma intuitiva. 
             Perfeito para profissionais, estudantes e empreendedores.
           </p>
 
           {/* Login Card */}
-          <Card className="max-w-md mx-auto p-8 bg-white/70 backdrop-blur-sm border-0 shadow-xl">
+          <Card className="max-w-md mx-auto p-8 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-xl">
             <div className="space-y-6">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
                 Comece agora
               </h2>
               
               <Button 
                 onClick={() => handleLogin('Google')}
-                className="w-full bg-white text-gray-700 border-2 border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200"
+                className="w-full bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-2 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-300 dark:hover:border-gray-500 transition-all duration-200"
                 size="lg"
               >
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
@@ -86,7 +87,7 @@ const Index = () => {
                 Entrar com Facebook
               </Button>
 
-              <p className="text-sm text-gray-500 mt-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
                 Ao continuar, você concorda com nossos Termos de Uso
               </p>
             </div>
@@ -96,27 +97,27 @@ const Index = () => {
         {/* Features */}
         <div className="grid md:grid-cols-3 gap-8 mt-20">
           <div className="text-center p-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-100 to-blue-200 rounded-full flex items-center justify-center mx-auto mb-4">
-              <PenTool className="h-8 w-8 text-blue-600" />
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <PenTool className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Fácil de usar</h3>
-            <p className="text-gray-600">Interface intuitiva que permite criar processos rapidamente</p>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Fácil de usar</h3>
+            <p className="text-gray-600 dark:text-gray-300">Interface intuitiva que permite criar processos rapidamente</p>
           </div>
 
           <div className="text-center p-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-green-100 to-green-200 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Users className="h-8 w-8 text-green-600" />
+            <div className="w-16 h-16 bg-gradient-to-r from-green-100 to-green-200 dark:from-green-900 dark:to-green-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Users className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Colaboração</h3>
-            <p className="text-gray-600">Compartilhe e colabore em tempo real com sua equipe</p>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Colaboração</h3>
+            <p className="text-gray-600 dark:text-gray-300">Compartilhe e colabore em tempo real com sua equipe</p>
           </div>
 
           <div className="text-center p-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-purple-100 to-purple-200 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Download className="h-8 w-8 text-purple-600" />
+            <div className="w-16 h-16 bg-gradient-to-r from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Download className="h-8 w-8 text-purple-600 dark:text-purple-400" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Exportação PDF</h3>
-            <p className="text-gray-600">Exporte seus processos em PDF com qualidade profissional</p>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Exportação PDF</h3>
+            <p className="text-gray-600 dark:text-gray-300">Exporte seus processos em PDF com qualidade profissional</p>
           </div>
         </div>
       </main>
