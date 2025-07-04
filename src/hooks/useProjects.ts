@@ -31,11 +31,13 @@ export const useProjects = (userId: string | undefined) => {
       setLoading(true)
       console.log('Fetching projects for user:', userId)
       
-      const { data, error } = await supabase
+      const query = supabase
         .from('projects')
         .select('*')
         .eq('user_id', userId)
         .order('updated_at', { ascending: false })
+
+      const { data, error } = await query
 
       if (error) {
         console.error('Error fetching projects:', error)
@@ -66,20 +68,24 @@ export const useProjects = (userId: string | undefined) => {
       let result
       if (projectId) {
         // Update existing project
-        result = await supabase
+        const query = supabase
           .from('projects')
           .update(projectData)
           .eq('id', projectId)
           .eq('user_id', userId)
           .select()
           .single()
+        
+        result = await query
       } else {
         // Create new project
-        result = await supabase
+        const query = supabase
           .from('projects')
           .insert({ ...projectData, created_at: new Date().toISOString() })
           .select()
           .single()
+        
+        result = await query
       }
 
       if (result.error) {
@@ -103,11 +109,13 @@ export const useProjects = (userId: string | undefined) => {
     try {
       console.log('Deleting project:', projectId)
       
-      const { error } = await supabase
+      const query = supabase
         .from('projects')
         .delete()
         .eq('id', projectId)
         .eq('user_id', userId)
+
+      const { error } = await query
 
       if (error) {
         console.error('Error deleting project:', error)
@@ -130,12 +138,14 @@ export const useProjects = (userId: string | undefined) => {
     try {
       console.log('Getting project:', projectId)
       
-      const { data, error } = await supabase
+      const query = supabase
         .from('projects')
         .select('*')
         .eq('id', projectId)
         .eq('user_id', userId)
         .single()
+
+      const { data, error } = await query
 
       if (error) {
         console.error('Error fetching project:', error)

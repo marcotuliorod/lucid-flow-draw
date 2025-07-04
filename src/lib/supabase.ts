@@ -9,24 +9,39 @@ console.log('Supabase config:', {
   key: supabaseAnonKey ? 'Set' : 'Missing' 
 })
 
+// Create a more complete mock client if env vars are missing
+const createMockSupabase = () => {
+  const mockError = { message: 'Supabase not configured' }
+  
+  const createMockQuery = () => ({
+    eq: () => createMockQuery(),
+    order: () => createMockQuery(),
+    select: () => createMockQuery(),
+    single: () => Promise.resolve({ data: null, error: mockError }),
+    then: (resolve: any) => resolve({ data: [], error: null })
+  })
+
+  return {
+    auth: {
+      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      signUp: () => Promise.resolve({ data: null, error: mockError }),
+      signInWithPassword: () => Promise.resolve({ data: null, error: mockError }),
+      signOut: () => Promise.resolve({ error: null })
+    },
+    from: () => ({
+      select: () => createMockQuery(),
+      insert: () => createMockQuery(),
+      update: () => createMockQuery(),
+      delete: () => createMockQuery()
+    })
+  }
+}
+
 // Create a mock client if env vars are missing
 export const supabase = supabaseUrl && supabaseAnonKey 
   ? createClient(supabaseUrl, supabaseAnonKey)
-  : {
-      auth: {
-        getSession: () => Promise.resolve({ data: { session: null }, error: null }),
-        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
-        signUp: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
-        signInWithPassword: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }),
-        signOut: () => Promise.resolve({ error: null })
-      },
-      from: () => ({
-        select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }),
-        insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }) }) }),
-        update: () => ({ eq: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: { message: 'Supabase not configured' } }) }) }) }),
-        delete: () => ({ eq: () => Promise.resolve({ error: null }) })
-      })
-    }
+  : createMockSupabase()
 
 export type Database = {
   public: {
