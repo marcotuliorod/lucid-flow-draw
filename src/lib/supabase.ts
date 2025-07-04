@@ -13,23 +13,26 @@ console.log('Supabase config:', {
 const createMockSupabase = () => {
   const mockError = { message: 'Supabase not configured' }
   
-  // Create a chainable query builder that supports all operations
-  const createQueryBuilder = () => {
-    const queryBuilder = {
+  // Create a consistent chainable query builder
+  const createChainableQuery = () => {
+    const chainable = {
       eq: (column: string, value: any) => ({
+        eq: (column: string, value: any) => chainable,
         order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
         single: () => Promise.resolve({ data: null, error: mockError }),
         select: (columns: string = '*') => ({
-          single: () => Promise.resolve({ data: null, error: mockError })
+          single: () => Promise.resolve({ data: null, error: mockError }),
+          eq: (column: string, value: any) => chainable
         })
       }),
       order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
       single: () => Promise.resolve({ data: null, error: mockError }),
       select: (columns: string = '*') => ({
-        single: () => Promise.resolve({ data: null, error: mockError })
+        single: () => Promise.resolve({ data: null, error: mockError }),
+        eq: (column: string, value: any) => chainable
       })
     }
-    return queryBuilder
+    return chainable
   }
   
   return {
@@ -43,6 +46,7 @@ const createMockSupabase = () => {
     from: (table: string) => ({
       select: (columns: string = '*') => ({
         eq: (column: string, value: any) => ({
+          eq: (column: string, value: any) => createChainableQuery(),
           order: (column: string, options?: any) => Promise.resolve({ data: [], error: null }),
           single: () => Promise.resolve({ data: null, error: mockError })
         }),
@@ -56,13 +60,20 @@ const createMockSupabase = () => {
       }),
       update: (data: any) => ({
         eq: (column: string, value: any) => ({
+          eq: (column: string, value: any) => ({
+            select: (columns: string = '*') => ({
+              single: () => Promise.resolve({ data: null, error: mockError })
+            })
+          }),
           select: (columns: string = '*') => ({
             single: () => Promise.resolve({ data: null, error: mockError })
           })
         })
       }),
       delete: () => ({
-        eq: (column: string, value: any) => Promise.resolve({ error: null })
+        eq: (column: string, value: any) => ({
+          eq: (column: string, value: any) => Promise.resolve({ error: null })
+        })
       })
     })
   }
