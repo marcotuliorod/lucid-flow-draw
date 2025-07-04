@@ -17,9 +17,16 @@ const createMockSupabase = () => {
     eq: () => createMockQuery(),
     order: () => createMockQuery(),
     select: () => createMockQuery(),
-    single: () => Promise.resolve({ data: null, error: mockError }),
-    then: (resolve: any) => resolve({ data: [], error: null })
+    single: () => createMockQuery(),
+    insert: () => createMockQuery(),
+    update: () => createMockQuery(),
+    delete: () => createMockQuery(),
+    // Remove the then method and make these actual promises
   })
+
+  // Make the final query methods return actual promises
+  const createFinalQuery = (data: any = null, error: any = null) => 
+    Promise.resolve({ data, error })
 
   return {
     auth: {
@@ -30,10 +37,37 @@ const createMockSupabase = () => {
       signOut: () => Promise.resolve({ error: null })
     },
     from: () => ({
-      select: () => createMockQuery(),
-      insert: () => createMockQuery(),
-      update: () => createMockQuery(),
-      delete: () => createMockQuery()
+      select: (columns: string) => {
+        const query = {
+          eq: () => query,
+          order: () => query,
+          single: () => createFinalQuery(null, mockError)
+        }
+        return query
+      },
+      insert: (data: any) => {
+        const query = {
+          select: () => ({
+            single: () => createFinalQuery(null, mockError)
+          })
+        }
+        return query
+      },
+      update: (data: any) => {
+        const query = {
+          eq: () => query,
+          select: () => ({
+            single: () => createFinalQuery(null, mockError)
+          })
+        }
+        return query
+      },
+      delete: () => {
+        const query = {
+          eq: () => createFinalQuery(null, null)
+        }
+        return query
+      }
     })
   }
 }
