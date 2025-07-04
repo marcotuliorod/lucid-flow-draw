@@ -23,37 +23,43 @@ const queryClient = new QueryClient({
 const AppContent = () => {
   const { user, loading } = useAuth();
 
-  console.log('App state:', { user: user?.email, loading });
+  console.log('App: Current state:', { userEmail: user?.email, loading });
 
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
-        <div className="text-slate-600 dark:text-slate-300">Carregando...</div>
+        <div className="text-lg text-slate-600 dark:text-slate-300">Carregando...</div>
       </div>
     );
   }
 
   return (
-    <Routes>
-      <Route path="/" element={user ? <Dashboard /> : <Index />} />
-      <Route path="/login" element={user ? <Dashboard /> : <LoginForm />} />
-      <Route path="/dashboard" element={user ? <Dashboard /> : <LoginForm />} />
-      <Route path="/editor/:id" element={user ? <ProcessEditor /> : <LoginForm />} />
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <div className="min-h-screen">
+      <Routes>
+        <Route path="/" element={user ? <Dashboard /> : <Index />} />
+        <Route path="/login" element={user ? <Dashboard /> : <LoginForm />} />
+        <Route path="/dashboard" element={user ? <Dashboard /> : <LoginForm />} />
+        <Route path="/editor/:id" element={user ? <ProcessEditor /> : <LoginForm />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </div>
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  console.log('App: Initializing application...')
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
