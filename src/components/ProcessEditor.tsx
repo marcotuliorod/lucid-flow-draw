@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -110,49 +111,51 @@ const ProcessEditor = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+      <header className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-700/50 px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
             <Button 
               variant="ghost" 
               size="sm"
               onClick={() => navigate('/dashboard')}
-              className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white font-light"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
             </Button>
             <Separator orientation="vertical" className="h-6" />
-            <div className="flex items-center space-x-2">
-              <PenTool className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                <PenTool className="h-4 w-4 text-white" />
+              </div>
               <Input
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                className="text-lg font-semibold border-none p-0 h-auto bg-transparent focus-visible:ring-0 text-gray-900 dark:text-white"
+                className="text-xl font-light border-none p-0 h-auto bg-transparent focus-visible:ring-0 text-slate-900 dark:text-white min-w-48"
               />
             </div>
-            <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+            <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border-0 font-light">
               {elements.length} elementos
             </Badge>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" onClick={handleSave} className="border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">
+          <div className="flex items-center space-x-3">
+            <Button variant="outline" size="sm" onClick={handleSave} className="border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-light rounded-lg">
               <Save className="h-4 w-4 mr-2" />
               Salvar
             </Button>
-            <Button variant="outline" size="sm" className="border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">
+            <Button variant="outline" size="sm" className="border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-light rounded-lg">
               <Undo className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" className="border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200">
+            <Button variant="outline" size="sm" className="border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-light rounded-lg">
               <Redo className="h-4 w-4" />
             </Button>
             <Separator orientation="vertical" className="h-6" />
             <Button 
               onClick={handleExportPDF}
-              className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white"
+              className="bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 hover:from-blue-700 hover:via-cyan-600 hover:to-teal-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
             >
               <Download className="h-4 w-4 mr-2" />
               Exportar PDF
@@ -164,7 +167,7 @@ const ProcessEditor = () => {
 
       <div className="flex flex-1">
         {/* Toolbar */}
-        <aside className="w-16 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center py-4 space-y-2">
+        <aside className="w-20 bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-r border-slate-200/50 dark:border-slate-700/50 flex flex-col items-center py-6 space-y-3">
           {tools.map((tool) => {
             const Icon = tool.icon;
             return (
@@ -172,10 +175,10 @@ const ProcessEditor = () => {
                 key={tool.id}
                 variant={selectedTool === tool.id ? "default" : "ghost"}
                 size="sm"
-                className={`w-12 h-12 p-0 ${
+                className={`w-14 h-14 p-0 rounded-xl ${
                   selectedTool === tool.id 
-                    ? 'bg-blue-600 text-white dark:bg-blue-600' 
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'
+                    ? 'bg-gradient-to-br from-blue-600 to-cyan-500 text-white shadow-lg' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-700'
                 }`}
                 onClick={() => setSelectedTool(tool.id)}
                 title={tool.label}
@@ -190,26 +193,26 @@ const ProcessEditor = () => {
         <main className="flex-1 relative overflow-hidden">
           <div 
             ref={canvasRef}
-            className="w-full h-full bg-white dark:bg-gray-800 relative cursor-crosshair"
+            className="w-full h-full bg-white dark:bg-slate-800 relative cursor-crosshair"
             onMouseDown={handleCanvasMouseDown}
             onMouseUp={handleCanvasMouseUp}
             style={{
               backgroundImage: `
-                radial-gradient(circle, #e5e7eb 1px, transparent 1px)
+                radial-gradient(circle, #e2e8f0 1px, transparent 1px)
               `,
-              backgroundSize: '20px 20px'
+              backgroundSize: '24px 24px'
             }}
           >
             {elements.map((element) => (
               <div
                 key={element.id}
-                className="absolute border-2 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-sm font-medium text-blue-900 dark:text-blue-100 rounded cursor-move hover:bg-blue-100 dark:hover:bg-blue-800/50 transition-colors"
+                className="absolute border border-blue-500 dark:border-blue-400 bg-blue-50/80 dark:bg-blue-900/20 backdrop-blur-sm flex items-center justify-center text-sm font-light text-blue-900 dark:text-blue-100 cursor-move hover:bg-blue-100/80 dark:hover:bg-blue-800/30 transition-all duration-200"
                 style={{
                   left: element.x,
                   top: element.y,
                   width: element.width,
                   height: element.height,
-                  borderRadius: element.type === 'circle' ? '50%' : element.type === 'diamond' ? '0' : '8px',
+                  borderRadius: element.type === 'circle' ? '50%' : element.type === 'diamond' ? '0' : '12px',
                   transform: element.type === 'diamond' ? 'rotate(45deg)' : 'none'
                 }}
               >
@@ -220,16 +223,18 @@ const ProcessEditor = () => {
             {/* Instructions */}
             {elements.length === 0 && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <Card className="p-8 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-dashed border-2 border-gray-300 dark:border-gray-600">
+                <Card className="p-12 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-dashed border-2 border-slate-300 dark:border-slate-600 rounded-2xl">
                   <div className="text-center">
-                    <PenTool className="h-12 w-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <PenTool className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h3 className="text-2xl font-light text-slate-900 dark:text-white mb-3">
                       Comece a desenhar seu processo
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                    <p className="text-slate-600 dark:text-slate-300 mb-8 font-light max-w-md leading-relaxed">
                       Selecione uma ferramenta na barra lateral e clique e arraste para criar elementos
                     </p>
-                    <div className="flex justify-center space-x-2">
+                    <div className="flex justify-center space-x-3">
                       {tools.slice(1, 4).map((tool) => {
                         const Icon = tool.icon;
                         return (
@@ -238,9 +243,9 @@ const ProcessEditor = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => setSelectedTool(tool.id)}
-                            className="text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600"
+                            className="text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-600 font-light rounded-lg"
                           >
-                            <Icon className="h-4 w-4 mr-1" />
+                            <Icon className="h-4 w-4 mr-2" />
                             {tool.label}
                           </Button>
                         );
