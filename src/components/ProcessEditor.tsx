@@ -1,15 +1,23 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import EditorHeader from "./editor/EditorHeader";
 import EditorToolbar from "./editor/EditorToolbar";
 import Canvas from "./editor/Canvas";
 import { useCanvas } from "./editor/hooks/useCanvas";
+import { useAuth } from "@/hooks/useAuth";
+import { useProjects } from "@/hooks/useProjects";
 
 const ProcessEditor = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { user } = useAuth();
+  const { saveProject, getProject } = useProjects(user?.id);
+  
   const [projectName, setProjectName] = useState("Novo Processo");
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const {
     canvasRef,
@@ -32,25 +40,77 @@ const ProcessEditor = () => {
     handleElementDoubleClick,
     handleTextSubmit,
     handleKeyPress,
-    setSelectedElement
+    setSelectedElement,
+    loadElements
   } = useCanvas();
+
+  // Load project if editing existing one
+  useEffect(() => {
+    if (id && id !== 'new' && user) {
+      loadProject(id);
+    }
+  }, [id, user]);
+
+  const loadProject = async (projectId: string) => {
+    setLoading(true);
+    const { data, error } = await getProject(projectId);
+    
+    if (error) {
+      toast.error("Erro ao carregar projeto");
+      navigate('/dashboard');
+      return;
+    }
+
+    if (data) {
+      setProjectName(data.name);
+      setCurrentProjectId(data.id);
+      loadElements(data.elements || []);
+    }
+    setLoading(false);
+  };
+
+  const handleSave = async () => {
+    if (!user) {
+      toast.error("Você precisa estar logado para salvar");
+      return;
+    }
+
+    setLoading(true);
+    const { data, error } = await saveProject(projectName, elements, currentProjectId || undefined);
+    
+    if (error) {
+      toast.error("Erro ao salvar projeto");
+    } else {
+      toast.success("Projeto salvo com sucesso!");
+      if (data && !currentProjectId) {
+        setCurrentProjectId(data.id);
+        navigate(`/editor/${data.id}`, { replace: true });
+      }
+    }
+    setLoading(false);
+  };
 
   const handleExportPDF = () => {
     console.log('Exportando PDF...');
-    const link = document.createElement('a');
-    link.href = '#';
-    link.download = `${projectName}.pdf`;
-    link.click();
-  };
-
-  const handleSave = () => {
-    console.log('Salvando projeto...');
+    toast.info("Funcionalidade de exportação em desenvolvimento");
   };
 
   const handleLogout = () => {
-    console.log('Fazendo logout...');
-    navigate('/');
+    navigate('/dashboard');
   };
+
+  if (!user) {
+    navigate('/');
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+        <div className="text-slate-600 dark:text-slate-300">Carregando projeto...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col">
@@ -61,6 +121,7 @@ const ProcessEditor = () => {
         onSave={handleSave}
         onExportPDF={handleExportPDF}
         onLogout={handleLogout}
+        saving={loading}
       />
 
       <div className="flex flex-1">

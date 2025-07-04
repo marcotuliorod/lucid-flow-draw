@@ -3,195 +3,158 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { 
   PenTool, 
   Plus, 
   FileText, 
   Calendar, 
-  Download,
+  Search,
   Trash2,
   Edit,
-  Search,
-  Filter
+  LogOut
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useProjects } from "@/hooks/useProjects";
 import ThemeToggle from "./ThemeToggle";
-
-interface Project {
-  id: string;
-  name: string;
-  lastModified: string;
-  elements: number;
-  status: 'draft' | 'completed';
-}
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const { projects, loading, deleteProject } = useProjects(user?.id);
   const [searchTerm, setSearchTerm] = useState("");
-  
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: '1',
-      name: 'Processo de Vendas',
-      lastModified: '2025-01-03',
-      elements: 12,
-      status: 'completed'
-    },
-    {
-      id: '2',
-      name: 'Fluxo de Atendimento',
-      lastModified: '2025-01-02',
-      elements: 8,
-      status: 'draft'
-    },
-    {
-      id: '3',
-      name: 'Processo de Compras',
-      lastModified: '2024-12-28',
-      elements: 15,
-      status: 'completed'
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  const handleDeleteProject = async (projectId: string) => {
+    const { error } = await deleteProject(projectId);
+    if (error) {
+      toast.error("Erro ao deletar projeto");
+    } else {
+      toast.success("Projeto deletado com sucesso!");
     }
-  ]);
-
-  const handleNewProject = () => {
-    const newProject: Project = {
-      id: Date.now().toString(),
-      name: 'Novo Processo',
-      lastModified: new Date().toISOString().split('T')[0],
-      elements: 0,
-      status: 'draft'
-    };
-    setProjects([newProject, ...projects]);
-    navigate(`/editor/${newProject.id}`);
   };
 
-  const handleDeleteProject = (id: string) => {
-    setProjects(projects.filter(p => p.id !== id));
-  };
-
-  const filteredProjects = projects.filter(project =>
+  const filteredProjects = projects.filter(project => 
     project.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
+        <div className="text-slate-600 dark:text-slate-300">Carregando...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       {/* Header */}
-      <header className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-700/50">
+      <header className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-700/50">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
                 <PenTool className="h-5 w-5 text-white" />
               </div>
-              <span className="text-2xl font-light text-slate-900 dark:text-white tracking-tight">ProcessFlow</span>
+              <div>
+                <span className="text-2xl font-light text-slate-900 dark:text-white tracking-tight">ProcessFlow</span>
+                <p className="text-sm text-slate-600 dark:text-slate-400">Bem-vindo, {user?.email}</p>
+              </div>
             </div>
-            <div className="flex items-center space-x-6">
-              <Button variant="ghost" className="text-slate-600 dark:text-slate-300 font-light">
-                Perfil
-              </Button>
-              <Button variant="ghost" className="text-slate-600 dark:text-slate-300 font-light">
+            <div className="flex items-center space-x-4">
+              <ThemeToggle />
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleLogout}
+                className="border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-light rounded-lg hover:bg-red-50 hover:text-red-600 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:text-red-400 dark:hover:border-red-600"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
                 Sair
               </Button>
-              <ThemeToggle />
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-12">
-        {/* Welcome Section */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-extralight text-slate-900 dark:text-white mb-3">
-            Seus Processos
-          </h1>
-          <p className="text-slate-600 dark:text-slate-300 font-light text-lg">
-            Gerencie e organize todos os seus diagramas de processo
-          </p>
+      {/* Main Content */}
+      <main className="container mx-auto px-6 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-light text-slate-900 dark:text-white mb-2">
+              Meus Projetos
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 font-light">
+              Gerencie seus diagramas de processo
+            </p>
+          </div>
+          <Button 
+            onClick={() => navigate('/editor/new')}
+            className="bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 hover:from-blue-700 hover:via-cyan-600 hover:to-teal-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Novo Projeto
+          </Button>
         </div>
 
-        {/* Action Bar */}
-        <div className="flex flex-col md:flex-row gap-6 mb-12">
-          <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 h-5 w-5" />
-            <Input
-              placeholder="Buscar processos..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-12 h-12 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-slate-200 dark:border-slate-600 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 rounded-xl font-light"
-            />
-          </div>
-          <div className="flex gap-3">
-            <Button variant="outline" className="h-12 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-xl font-light">
-              <Filter className="h-4 w-4 mr-2" />
-              Filtros
-            </Button>
-            <Button 
-              onClick={handleNewProject}
-              className="h-12 bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 hover:from-blue-700 hover:via-cyan-600 hover:to-teal-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Processo
-            </Button>
-          </div>
+        {/* Search */}
+        <div className="relative mb-8">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            placeholder="Buscar projetos..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 rounded-lg border-slate-200 dark:border-slate-600"
+          />
         </div>
 
         {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProjects.map((project) => (
-            <Card key={project.id} className="p-8 bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer group rounded-2xl">
-              <div className="flex items-start justify-between mb-6">
-                <div className="flex-1">
-                  <h3 className="text-xl font-light text-slate-900 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                    {project.name}
-                  </h3>
-                  <div className="flex items-center space-x-6 text-sm text-slate-500 dark:text-slate-400">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      {new Date(project.lastModified).toLocaleDateString('pt-BR')}
-                    </div>
-                    <div className="flex items-center">
-                      <FileText className="h-4 w-4 mr-2" />
-                      {project.elements} elementos
+            <Card key={project.id} className="p-6 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl group">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-xl flex items-center justify-center">
+                    <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-slate-900 dark:text-white truncate max-w-32">
+                      {project.name}
+                    </h3>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <Calendar className="h-3 w-3 text-slate-400" />
+                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                        {new Date(project.updated_at).toLocaleDateString('pt-BR')}
+                      </span>
                     </div>
                   </div>
                 </div>
-                <Badge 
-                  variant={project.status === 'completed' ? 'default' : 'secondary'}
-                  className={project.status === 'completed' 
-                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border-0 font-light' 
-                    : 'bg-slate-100 text-slate-600 dark:bg-slate-700/50 dark:text-slate-300 border-0 font-light'
-                  }
-                >
-                  {project.status === 'completed' ? 'Concluído' : 'Rascunho'}
+                <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border-0 font-light">
+                  {project.elements.length} elementos
                 </Badge>
               </div>
 
-              <div className="flex items-center justify-between">
-                <div className="flex space-x-3">
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => navigate(`/editor/${project.id}`)}
-                    className="bg-white/50 dark:bg-slate-700/50 hover:bg-white dark:hover:bg-slate-600 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg font-light"
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar
-                  </Button>
-                  <Button 
-                    size="sm"
-                    variant="outline"
-                    className="bg-white/50 dark:bg-slate-700/50 hover:bg-white dark:hover:bg-slate-600 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 rounded-lg font-light"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    PDF
-                  </Button>
-                </div>
+              <div className="flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 <Button
-                  size="sm"
                   variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(`/editor/${project.id}`)}
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Editar
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => handleDeleteProject(project.id)}
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-light"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -200,25 +163,24 @@ const Dashboard = () => {
           ))}
         </div>
 
-        {/* Empty State */}
-        {filteredProjects.length === 0 && (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <FileText className="h-10 w-10 text-slate-400 dark:text-slate-500" />
+        {filteredProjects.length === 0 && !loading && (
+          <div className="text-center py-12">
+            <div className="w-24 h-24 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-full flex items-center justify-center mx-auto mb-6">
+              <FileText className="h-8 w-8 text-slate-400" />
             </div>
-            <h3 className="text-2xl font-light text-slate-900 dark:text-white mb-3">
-              {searchTerm ? 'Nenhum processo encontrado' : 'Nenhum processo criado ainda'}
+            <h3 className="text-xl font-light text-slate-900 dark:text-white mb-2">
+              {searchTerm ? 'Nenhum projeto encontrado' : 'Nenhum projeto ainda'}
             </h3>
-            <p className="text-slate-600 dark:text-slate-300 mb-8 font-light text-lg">
-              {searchTerm ? 'Tente buscar com outros termos' : 'Comece criando seu primeiro diagrama de processo'}
+            <p className="text-slate-600 dark:text-slate-400 font-light mb-6">
+              {searchTerm ? 'Tente outro termo de busca' : 'Comece criando seu primeiro diagrama de processo'}
             </p>
             {!searchTerm && (
               <Button 
-                onClick={handleNewProject}
-                className="bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 hover:from-blue-700 hover:via-cyan-600 hover:to-teal-600 text-white rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-3"
+                onClick={() => navigate('/editor/new')}
+                className="bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 hover:from-blue-700 hover:via-cyan-600 hover:to-teal-600 text-white font-medium rounded-lg"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Criar Primeiro Processo
+                Criar Primeiro Projeto
               </Button>
             )}
           </div>

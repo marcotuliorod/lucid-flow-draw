@@ -1,10 +1,9 @@
-
 import { useState, useRef } from "react";
 import { CanvasElement } from "../types";
 
-export const useCanvas = () => {
+export const useCanvas = (initialElements: CanvasElement[] = []) => {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const [elements, setElements] = useState<CanvasElement[]>([]);
+  const [elements, setElements] = useState<CanvasElement[]>(initialElements);
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
   const [selectedTool, setSelectedTool] = useState<string>("select");
   const [editingText, setEditingText] = useState<string | null>(null);
@@ -162,6 +161,11 @@ export const useCanvas = () => {
     }
   };
 
+  // New function to load elements
+  const loadElements = (newElements: CanvasElement[]) => {
+    setElements(newElements);
+  };
+
   return {
     canvasRef,
     elements,
@@ -183,6 +187,7 @@ export const useCanvas = () => {
     handleElementDoubleClick,
     handleTextSubmit,
     handleKeyPress,
-    setSelectedElement
+    setSelectedElement,
+    loadElements
   };
 };

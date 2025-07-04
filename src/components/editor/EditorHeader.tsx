@@ -10,7 +10,8 @@ import {
   Undo,
   Redo,
   Download,
-  LogOut
+  LogOut,
+  Loader2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import ThemeToggle from "../ThemeToggle";
@@ -22,6 +23,7 @@ interface EditorHeaderProps {
   onSave: () => void;
   onExportPDF: () => void;
   onLogout: () => void;
+  saving?: boolean;
 }
 
 const EditorHeader = ({ 
@@ -30,7 +32,8 @@ const EditorHeader = ({
   elementsCount, 
   onSave, 
   onExportPDF, 
-  onLogout 
+  onLogout,
+  saving = false
 }: EditorHeaderProps) => {
   const navigate = useNavigate();
 
@@ -64,9 +67,19 @@ const EditorHeader = ({
         </div>
 
         <div className="flex items-center space-x-3">
-          <Button variant="outline" size="sm" onClick={onSave} className="border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-light rounded-lg">
-            <Save className="h-4 w-4 mr-2" />
-            Salvar
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onSave} 
+            disabled={saving}
+            className="border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-light rounded-lg"
+          >
+            {saving ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4 mr-2" />
+            )}
+            {saving ? 'Salvando...' : 'Salvar'}
           </Button>
           <Button variant="outline" size="sm" className="border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-light rounded-lg">
             <Undo className="h-4 w-4" />
@@ -89,7 +102,7 @@ const EditorHeader = ({
             className="border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-light rounded-lg hover:bg-red-50 hover:text-red-600 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:text-red-400 dark:hover:border-red-600"
           >
             <LogOut className="h-4 w-4 mr-2" />
-            Sair
+            Dashboard
           </Button>
           <ThemeToggle />
         </div>
