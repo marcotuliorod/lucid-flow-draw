@@ -24,17 +24,15 @@ const createMockSupabase = () => {
     select: () => mockQueryBuilder
   }
 
-  // Mock delete query builder - return a Promise directly when awaited
-  const createMockDeleteBuilder = () => ({
-    eq: () => createMockDeleteBuilder(),
-    // Convert to Promise when awaited
-    [Symbol.toPrimitive]: () => Promise.resolve(mockDeleteSuccess),
-    // Make it awaitable by implementing PromiseLike
-    then: <T>(onFulfilled?: (value: typeof mockDeleteSuccess) => T) => 
-      Promise.resolve(mockDeleteSuccess).then(onFulfilled),
-    catch: (onRejected?: (reason: any) => any) => 
-      Promise.resolve(mockDeleteSuccess).catch(onRejected)
-  })
+  // Mock delete query builder that returns a proper Promise
+  const createMockDeleteBuilder = () => {
+    const deleteBuilder = {
+      eq: () => deleteBuilder,
+    }
+    
+    // Convert the delete builder to a Promise when awaited
+    return Object.assign(deleteBuilder, Promise.resolve(mockDeleteSuccess))
+  }
   
   return {
     auth: {

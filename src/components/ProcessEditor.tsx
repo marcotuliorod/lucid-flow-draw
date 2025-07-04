@@ -53,20 +53,29 @@ const ProcessEditor = () => {
 
   const loadProject = async (projectId: string) => {
     setLoading(true);
-    const { data, error } = await getProject(projectId);
-    
-    if (error) {
-      toast.error("Erro ao carregar projeto");
-      navigate('/dashboard');
-      return;
-    }
+    try {
+      const { data, error } = await getProject(projectId);
+      
+      if (error) {
+        console.error('Error loading project:', error);
+        toast.error("Erro ao carregar projeto");
+        navigate('/dashboard');
+        return;
+      }
 
-    if (data) {
-      setProjectName(data.name);
-      setCurrentProjectId(data.id);
-      loadElements(data.elements || []);
+      if (data) {
+        setProjectName(data.name);
+        setCurrentProjectId(data.id);
+        loadElements(data.elements || []);
+        toast.success("Projeto carregado com sucesso!");
+      }
+    } catch (err) {
+      console.error('Unexpected error loading project:', err);
+      toast.error("Erro inesperado ao carregar projeto");
+      navigate('/dashboard');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSave = async () => {
@@ -76,18 +85,25 @@ const ProcessEditor = () => {
     }
 
     setLoading(true);
-    const { data, error } = await saveProject(projectName, elements, currentProjectId || undefined);
-    
-    if (error) {
-      toast.error("Erro ao salvar projeto");
-    } else {
-      toast.success("Projeto salvo com sucesso!");
-      if (data && !currentProjectId) {
-        setCurrentProjectId(data.id);
-        navigate(`/editor/${data.id}`, { replace: true });
+    try {
+      const { data, error } = await saveProject(projectName, elements, currentProjectId || undefined);
+      
+      if (error) {
+        console.error('Error saving project:', error);
+        toast.error("Erro ao salvar projeto");
+      } else {
+        toast.success("Projeto salvo com sucesso!");
+        if (data && !currentProjectId) {
+          setCurrentProjectId(data.id);
+          navigate(`/editor/${data.id}`, { replace: true });
+        }
       }
+    } catch (err) {
+      console.error('Unexpected error saving project:', err);
+      toast.error("Erro inesperado ao salvar projeto");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleExportPDF = () => {
@@ -95,16 +111,11 @@ const ProcessEditor = () => {
     toast.info("Funcionalidade de exportação em desenvolvimento");
   };
 
-  const handleLogout = () => {
+  const handleBackToDashboard = () => {
     navigate('/dashboard');
   };
 
-  if (!user) {
-    navigate('/');
-    return null;
-  }
-
-  if (loading) {
+  if (loading && !elements.length) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
         <div className="text-slate-600 dark:text-slate-300">Carregando projeto...</div>
@@ -120,7 +131,7 @@ const ProcessEditor = () => {
         elementsCount={elements.length}
         onSave={handleSave}
         onExportPDF={handleExportPDF}
-        onLogout={handleLogout}
+        onLogout={handleBackToDashboard}
         saving={loading}
       />
 
