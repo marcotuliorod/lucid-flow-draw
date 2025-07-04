@@ -24,14 +24,16 @@ const createMockSupabase = () => {
     select: () => mockQueryBuilder
   }
 
-  // Mock delete query builder that returns a proper Promise
+  // Mock delete query builder that properly returns a Promise
   const createMockDeleteBuilder = () => {
     const deleteBuilder = {
-      eq: () => deleteBuilder,
+      eq: (column: string, value: any) => {
+        // Return a Promise directly instead of trying to make the builder itself thenable
+        return Promise.resolve(mockDeleteSuccess)
+      }
     }
     
-    // Convert the delete builder to a Promise when awaited
-    return Object.assign(deleteBuilder, Promise.resolve(mockDeleteSuccess))
+    return deleteBuilder
   }
   
   return {
