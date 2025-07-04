@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
@@ -24,17 +23,10 @@ const createMockSupabase = () => {
     select: () => mockQueryBuilder
   }
 
-  // Mock delete query builder that properly returns a Promise
-  const createMockDeleteBuilder = () => {
-    const deleteBuilder = {
-      eq: (column: string, value: any) => {
-        // Return a Promise directly instead of trying to make the builder itself thenable
-        return Promise.resolve(mockDeleteSuccess)
-      }
-    }
-    
-    return deleteBuilder
-  }
+  // Mock delete query builder that maintains proper chainability
+  const createMockDeleteBuilder = () => ({
+    eq: (column: string, value: any) => Promise.resolve(mockDeleteSuccess)
+  })
   
   return {
     auth: {
