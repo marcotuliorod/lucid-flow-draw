@@ -1,10 +1,28 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://jfidiqskcchpkcyhjjyv.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'SUPABASE_CLIENT_API_KEY'
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+// Validate environment variables
+const validateEnvVars = () => {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('Supabase environment variables are missing. Using mock client.')
+    return false
+  }
+  
+  if (!supabaseUrl.startsWith('https://')) {
+    console.error('Invalid Supabase URL format')
+    return false
+  }
+  
+  return true
+}
+
+const isConfigValid = validateEnvVars()
 
 console.log('Supabase config:', { 
+  configured: isConfigValid ? 'Yes' : 'No',
   url: supabaseUrl ? 'Set' : 'Missing', 
   key: supabaseAnonKey ? 'Set' : 'Missing' 
 })
@@ -57,8 +75,8 @@ const createMockSupabase = () => {
   }
 }
 
-// Create a mock client if env vars are missing
-export const supabase = supabaseUrl && supabaseAnonKey 
+// Create client with proper validation
+export const supabase = isConfigValid 
   ? createClient(supabaseUrl, supabaseAnonKey)
   : createMockSupabase()
 
@@ -91,7 +109,6 @@ export type Database = {
           user_id?: string
         }
       }
-      // Adicionar tabela de perfis de usuário se necessário
       profiles: {
         Row: {
           id: string

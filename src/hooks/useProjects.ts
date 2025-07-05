@@ -2,7 +2,15 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { CanvasElement } from '@/components/editor/types'
-import { projectSchema, sanitizeProjectName, isValidProjectId, createSecureError } from '@/lib/validation'
+import { 
+  projectSchema, 
+  sanitizeProjectName, 
+  isValidProjectId, 
+  isValidUserId,
+  createSecureError,
+  validateAndSanitizeInput 
+} from '@/lib/validation'
+import { logSecurityEvent } from '@/lib/security'
 
 export interface Project {
   id: string
@@ -28,6 +36,13 @@ export const useProjects = (userId: string | undefined) => {
   const fetchProjects = async () => {
     if (!userId) return
 
+    // Validate user ID
+    if (!isValidUserId(userId)) {
+      console.error('Invalid user ID format')
+      setLoading(false)
+      return
+    }
+
     try {
       setLoading(true)
       console.log('Fetching projects for user')
@@ -42,6 +57,12 @@ export const useProjects = (userId: string | undefined) => {
 
       if (error) {
         console.error('Error fetching projects:', error.message)
+        logSecurityEvent({
+          type: 'unusual_access',
+          userId,
+          timestamp: new Date(),
+          details: { error: error.message, action: 'fetch_projects' }
+        })
         const userMessage = createSecureError('Erro ao carregar projetos', import.meta.env.DEV)
         console.error(userMessage)
       } else {
@@ -50,6 +71,12 @@ export const useProjects = (userId: string | undefined) => {
       }
     } catch (err) {
       console.error('Unexpected error fetching projects:', err)
+      logSecurityEvent({
+        type: 'unusual_access',
+        userId,
+        timestamp: new Date(),
+        details: { error: String(err), action: 'fetch_projects_exception' }
+      })
     } finally {
       setLoading(false)
     }
@@ -58,18 +85,22 @@ export const useProjects = (userId: string | undefined) => {
   const saveProject = async (name: string, elements: CanvasElement[], projectId?: string) => {
     if (!userId) return { error: 'User not authenticated' }
 
+    // Validate user ID
+    if (!isValidUserId(userId)) {
+      return { error: 'ID do usuário inválido' }
+    }
+
     try {
-      // Sanitize and validate inputs
+      // Sanitize and validate inputs using enhanced validation
       const sanitizedName = sanitizeProjectName(name)
       
-      const validationResult = projectSchema.safeParse({
+      const validation = validateAndSanitizeInput({
         name: sanitizedName,
         elements
-      })
+      }, projectSchema)
 
-      if (!validationResult.success) {
-        const errorMessage = validationResult.error.errors[0].message
-        return { error: errorMessage }
+      if (!validation.success) {
+        return { error: validation.error }
       }
 
       // Validate project ID if updating
@@ -80,20 +111,20 @@ export const useProjects = (userId: string | undefined) => {
       console.log('Saving project with validation passed')
       
       const projectData = {
-        name: sanitizedName,
-        elements: validationResult.data.elements,
+        name: validation.data.name,
+        elements: validation.data.elements,
         user_id: userId,
         updated_at: new Date().toISOString()
       }
 
       let result
       if (projectId) {
-        // Update existing project
+        // Update existing project with additional security check
         const query = supabase
           .from('projects')
           .update(projectData)
           .eq('id', projectId)
-          .eq('user_id', userId)
+          .eq('user_id', userId) // Double check user ownership
           .select()
           .single()
         
@@ -111,6 +142,12 @@ export const useProjects = (userId: string | undefined) => {
 
       if (result.error) {
         console.error('Error saving project:', result.error.message)
+        logSecurityEvent({
+          type: 'unusual_access',
+          userId,
+          timestamp: new Date(),
+          details: { error: result.error.message, action: 'save_project' }
+        })
         const userMessage = createSecureError('Erro ao salvar projeto', import.meta.env.DEV)
         return { error: userMessage }
       }
@@ -120,6 +157,12 @@ export const useProjects = (userId: string | undefined) => {
       return { data: result.data }
     } catch (err) {
       console.error('Unexpected error saving project:', err)
+      logSecurityEvent({
+        type: 'unusual_access',
+        userId,
+        timestamp: new Date(),
+        details: { error: String(err), action: 'save_project_exception' }
+      })
       const userMessage = createSecureError('Erro inesperado ao salvar projeto', import.meta.env.DEV)
       return { error: userMessage }
     }
@@ -128,24 +171,30 @@ export const useProjects = (userId: string | undefined) => {
   const deleteProject = async (projectId: string) => {
     if (!userId) return { error: 'User not authenticated' }
 
-    try {
-      // Validate project ID
-      if (!isValidProjectId(projectId)) {
-        return { error: 'ID do projeto inválido' }
-      }
+    // Validate IDs
+    if (!isValidUserId(userId) || !isValidProjectId(projectId)) {
+      return { error: 'IDs inválidos' }
+    }
 
+    try {
       console.log('Deleting project with validation passed')
       
       const query = supabase
         .from('projects')
         .delete()
         .eq('id', projectId)
-        .eq('user_id', userId)
+        .eq('user_id', userId) // Ensure user owns the project
 
       const { error } = await query
 
       if (error) {
         console.error('Error deleting project:', error.message)
+        logSecurityEvent({
+          type: 'unusual_access',
+          userId,
+          timestamp: new Date(),
+          details: { error: error.message, action: 'delete_project' }
+        })
         const userMessage = createSecureError('Erro ao deletar projeto', import.meta.env.DEV)
         return { error: userMessage }
       }
@@ -155,6 +204,12 @@ export const useProjects = (userId: string | undefined) => {
       return { error: null }
     } catch (err) {
       console.error('Unexpected error deleting project:', err)
+      logSecurityEvent({
+        type: 'unusual_access',
+        userId,
+        timestamp: new Date(),
+        details: { error: String(err), action: 'delete_project_exception' }
+      })
       const userMessage = createSecureError('Erro inesperado ao deletar projeto', import.meta.env.DEV)
       return { error: userMessage }
     }
@@ -163,25 +218,31 @@ export const useProjects = (userId: string | undefined) => {
   const getProject = async (projectId: string) => {
     if (!userId) return { error: 'User not authenticated' }
 
-    try {
-      // Validate project ID
-      if (!isValidProjectId(projectId)) {
-        return { error: 'ID do projeto inválido' }
-      }
+    // Validate IDs
+    if (!isValidUserId(userId) || !isValidProjectId(projectId)) {
+      return { error: 'IDs inválidos' }
+    }
 
+    try {
       console.log('Getting project with validation passed')
       
       const query = supabase
         .from('projects')
         .select('*')
         .eq('id', projectId)
-        .eq('user_id', userId)
+        .eq('user_id', userId) // Ensure user owns the project
         .single()
 
       const { data, error } = await query
 
       if (error) {
         console.error('Error fetching project:', error.message)
+        logSecurityEvent({
+          type: 'unusual_access',
+          userId,
+          timestamp: new Date(),
+          details: { error: error.message, action: 'get_project' }
+        })
         const userMessage = createSecureError('Erro ao carregar projeto', import.meta.env.DEV)
         return { error: userMessage }
       }
@@ -190,6 +251,12 @@ export const useProjects = (userId: string | undefined) => {
       return { data, error: null }
     } catch (err) {
       console.error('Unexpected error fetching project:', err)
+      logSecurityEvent({
+        type: 'unusual_access',
+        userId,
+        timestamp: new Date(),
+        details: { error: String(err), action: 'get_project_exception' }
+      })
       const userMessage = createSecureError('Erro inesperado ao carregar projeto', import.meta.env.DEV)
       return { error: userMessage }
     }

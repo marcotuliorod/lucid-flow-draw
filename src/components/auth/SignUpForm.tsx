@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useSignUp } from '@/hooks/useSignUp'
 import { Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react'
+import { emailSchema, passwordSchema, sanitizeEmail } from '@/lib/validation'
 
 interface SignUpFormProps {
   onSuccess?: () => void
@@ -25,16 +26,16 @@ const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!email) {
-      newErrors.email = 'Email é obrigatório'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Email inválido'
+    // Use centralized email validation
+    const emailValidation = emailSchema.safeParse(sanitizeEmail(email))
+    if (!emailValidation.success) {
+      newErrors.email = emailValidation.error.errors[0].message
     }
 
-    if (!password) {
-      newErrors.password = 'Senha é obrigatória'
-    } else if (password.length < 6) {
-      newErrors.password = 'Senha deve ter pelo menos 6 caracteres'
+    // Use centralized password validation
+    const passwordValidation = passwordSchema.safeParse(password)
+    if (!passwordValidation.success) {
+      newErrors.password = passwordValidation.error.errors[0].message
     }
 
     if (!confirmPassword) {
@@ -94,7 +95,7 @@ const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className={`rounded-lg pr-10 ${errors.password ? 'border-red-500' : ''}`}
-            placeholder="Mínimo 6 caracteres"
+            placeholder="Mínimo 8 caracteres, com maiúscula, minúscula e número"
           />
           <Button
             type="button"
