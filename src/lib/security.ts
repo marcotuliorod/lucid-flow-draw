@@ -91,7 +91,8 @@ export const sanitizeHtmlContent = (content: string): string => {
 
 // Validate file uploads
 export const validateFileUpload = (file: File): { valid: boolean; error?: string } => {
-  if (!SECURITY_CONFIG.ALLOWED_FILE_TYPES.includes(file.type)) {
+  // Use type assertion to check against the readonly array
+  if (!(SECURITY_CONFIG.ALLOWED_FILE_TYPES as readonly string[]).includes(file.type)) {
     return { valid: false, error: 'Tipo de arquivo não permitido' }
   }
   
