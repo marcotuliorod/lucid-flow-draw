@@ -1,6 +1,7 @@
 
 import { useState } from 'react'
 import { useAuth } from './useAuth'
+import { useSecurity } from './useSecurity'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import { emailSchema, passwordSchema, sanitizeEmail, createSecureError } from '@/lib/validation'
@@ -8,14 +9,13 @@ import { emailSchema, passwordSchema, sanitizeEmail, createSecureError } from '@
 export const useSignUp = () => {
   const [loading, setLoading] = useState(false)
   const { signUp } = useAuth()
+  const { checkAuthRateLimit } = useSecurity()
   const navigate = useNavigate()
 
   const handleSignUp = async (email: string, password: string) => {
     setLoading(true)
     
     try {
-      console.log('useSignUp: Starting signup process')
-      
       // Sanitize inputs
       const sanitizedEmail = sanitizeEmail(email)
       
@@ -34,6 +34,15 @@ export const useSignUp = () => {
         setLoading(false)
         return { success: false, error: 'Senha inválida' }
       }
+
+      // Check rate limit
+      if (!checkAuthRateLimit(sanitizedEmail, 'signup')) {
+        toast.error('Muitas tentativas de cadastro. Tente novamente em 1 hora.')
+        setLoading(false)
+        return { success: false, error: 'Rate limit exceeded' }
+      }
+
+      console.log('useSignUp: Starting signup process')
 
       const { data, error } = await signUp(sanitizedEmail, password)
       

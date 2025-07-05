@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
+import { useSecurity } from "./hooks/useSecurity";
 import Index from "./pages/Index";
 import Dashboard from "./components/Dashboard";
 import ProcessEditor from "./components/ProcessEditor";
@@ -59,6 +60,9 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const AppContent = () => {
+  // Initialize security middleware
+  useSecurity();
+
   return (
     <div className="min-h-screen">
       <Routes>
@@ -94,7 +98,7 @@ const AppContent = () => {
 };
 
 const App = () => {
-  console.log('App: Initializing application...')
+  console.log('App: Initializing application with security enhancements...')
   
   return (
     <QueryClientProvider client={queryClient}>
