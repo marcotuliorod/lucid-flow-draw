@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
@@ -143,22 +142,16 @@ export const useAuth = () => {
         console.log('useAuth: Attempting Google signin')
       }
 
-      // Validar se a URL de origem é segura
+      // Simplificar validação de origem
       const origin = window.location.origin
-      if (!origin || (!origin.includes('localhost') && !origin.includes('https://'))) {
-        return { 
-          data: null, 
-          error: { message: 'URL de redirecionamento inválida' } 
-        }
-      }
-
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${origin}/dashboard`,
           queryParams: {
             access_type: 'offline',
-            prompt: 'consent',
+            prompt: 'select_account',
           }
         }
       })
@@ -168,27 +161,28 @@ export const useAuth = () => {
           console.error('useAuth: Google SignIn error:', error.message)
         }
         
-        // Tratamento específico de erros do Google OAuth
-        if (error.message?.includes('not configured')) {
-          return { data: null, error: { message: 'Login com Google não está configurado no servidor' } }
-        } else if (error.message?.includes('Invalid redirect')) {
-          return { data: null, error: { message: 'Configuração de redirecionamento inválida' } }
-        } else if (error.message?.includes('access_denied')) {
-          return { data: null, error: { message: 'Acesso negado pelo usuário' } }
+        // Tratamento mais simples de erros
+        if (error.message?.includes('not configured') || error.message?.includes('disabled')) {
+          return { data: null, error: { message: 'Login com Google não está disponível no momento' } }
+        } else if (error.message?.includes('Invalid') || error.message?.includes('redirect')) {
+          return { data: null, error: { message: 'Erro de configuração do Google. Tente novamente.' } }
+        } else if (error.message?.includes('access_denied') || error.message?.includes('cancelled')) {
+          return { data: null, error: { message: 'Login cancelado pelo usuário' } }
         }
         
-        return { data: null, error: { message: 'Erro no login com Google' } }
-      } else if (import.meta.env.DEV) {
-        console.log('useAuth: Google SignIn initiated')
+        return { data: null, error: { message: 'Erro no login com Google. Tente novamente.' } }
+      } 
+      
+      if (import.meta.env.DEV) {
+        console.log('useAuth: Google SignIn initiated successfully')
       }
       
-      return { data, error }
+      return { data, error: null }
     } catch (err) {
       if (import.meta.env.DEV) {
-        console.error('useAuth: Google SignIn error:', err)
+        console.error('useAuth: Google SignIn unexpected error:', err)
       }
-      const secureError = createSecureError('Erro no login com Google', import.meta.env.DEV)
-      return { data: null, error: { message: secureError } }
+      return { data: null, error: { message: 'Erro inesperado no login com Google' } }
     }
   }
 

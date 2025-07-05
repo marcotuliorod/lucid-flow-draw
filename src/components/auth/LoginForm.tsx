@@ -38,21 +38,23 @@ const LoginForm = () => {
     setGoogleLoading(true)
     
     try {
-      const { error } = await signInWithGoogle()
+      if (import.meta.env.DEV) {
+        console.log('LoginForm: Starting Google signin')
+      }
+      
+      const { data, error } = await signInWithGoogle()
       
       if (error) {
-        // Tratamento mais específico de erros
-        if (error.message?.includes('não está configurado')) {
-          setError('O login com Google ainda não foi configurado. Entre em contato com o suporte.')
-        } else if (error.message?.includes('redirecionamento')) {
-          setError('Erro de configuração. Tente novamente ou entre em contato com o suporte.')
-        } else if (error.message?.includes('negado')) {
-          setError('Você cancelou o login. Tente novamente se desejar continuar.')
-        } else {
-          setError(error.message || 'Erro ao fazer login com Google. Tente novamente.')
+        console.error('LoginForm: Google signin error:', error.message)
+        setError(error.message || 'Erro ao fazer login com Google')
+      } else if (data) {
+        if (import.meta.env.DEV) {
+          console.log('LoginForm: Google signin successful, redirecting...')
         }
+        // O redirecionamento será handled pelo Supabase
       }
     } catch (err) {
+      console.error('LoginForm: Unexpected Google signin error:', err)
       setError('Erro inesperado. Tente novamente mais tarde.')
     } finally {
       setGoogleLoading(false)
