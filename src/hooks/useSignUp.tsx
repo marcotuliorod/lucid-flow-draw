@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useAuth } from './useAuth'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { emailSchema, passwordSchema, sanitizeEmail, createSecureError } from '@/lib/validation'
 
 export const useSignUp = () => {
   const [loading, setLoading] = useState(false)
@@ -13,56 +14,50 @@ export const useSignUp = () => {
     setLoading(true)
     
     try {
-      console.log('useSignUp: Starting signup process for:', email)
+      console.log('useSignUp: Starting signup process')
       
-      // Validação básica
-      if (!email || !password) {
-        toast.error('Email e senha são obrigatórios')
-        setLoading(false)
-        return { success: false, error: 'Campos obrigatórios não preenchidos' }
-      }
-
-      if (password.length < 6) {
-        toast.error('A senha deve ter pelo menos 6 caracteres')
-        setLoading(false)
-        return { success: false, error: 'Senha muito curta' }
-      }
-
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(email)) {
-        toast.error('Email inválido')
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeEmail(email)
+      
+      // Validate inputs
+      const emailValidation = emailSchema.safeParse(sanitizedEmail)
+      const passwordValidation = passwordSchema.safeParse(password)
+      
+      if (!emailValidation.success) {
+        toast.error(emailValidation.error.errors[0].message)
         setLoading(false)
         return { success: false, error: 'Email inválido' }
       }
+      
+      if (!passwordValidation.success) {
+        toast.error(passwordValidation.error.errors[0].message)
+        setLoading(false)
+        return { success: false, error: 'Senha inválida' }
+      }
 
-      const { data, error } = await signUp(email, password)
+      const { data, error } = await signUp(sanitizedEmail, password)
       
       if (error) {
-        console.error('useSignUp: Error during signup:', error)
+        console.error('useSignUp: Error during signup:', error.message)
         
-        // Tratamento de erros específicos do Supabase
+        // Secure error handling - don't expose system details
+        const userMessage = createSecureError('Erro ao criar conta. Tente novamente.', import.meta.env.DEV)
+        
         if (error.message?.includes('User already registered') || error.message?.includes('already been registered')) {
           toast.error('Este email já está cadastrado. Tente fazer login.')
           return { success: false, error: 'Email já cadastrado' }
-        } else if (error.message?.includes('Invalid email')) {
-          toast.error('Email inválido')
-          return { success: false, error: 'Email inválido' }
-        } else if (error.message?.includes('Password') || error.message?.includes('password')) {
-          toast.error('Senha deve ter pelo menos 6 caracteres')
-          return { success: false, error: 'Senha inválida' }
         } else if (error.message?.includes('not configured')) {
-          toast.error('Sistema de autenticação não configurado. Entre em contato com o suporte.')
+          toast.error('Sistema temporariamente indisponível. Tente novamente mais tarde.')
           return { success: false, error: 'Sistema não configurado' }
         } else {
-          toast.error('Erro ao criar conta. Tente novamente.')
-          return { success: false, error: error.message }
+          toast.error(userMessage)
+          return { success: false, error: 'Erro na criação da conta' }
         }
       }
 
       if (data?.user) {
-        console.log('useSignUp: User created successfully:', data.user.email)
+        console.log('useSignUp: User created successfully')
         
-        // Se o usuário foi criado e confirmado automaticamente
         if (data.user.email_confirmed_at || data.session) {
           toast.success('Conta criada com sucesso! Redirecionando...')
           setTimeout(() => {
@@ -75,13 +70,13 @@ export const useSignUp = () => {
         return { success: true, data }
       }
 
-      // Caso padrão - cadastro realizado mas precisa confirmar email
       toast.success('Cadastro realizado! Verifique seu email para confirmar a conta.')
       return { success: true, data }
       
     } catch (err) {
       console.error('useSignUp: Unexpected error:', err)
-      toast.error('Erro inesperado. Tente novamente.')
+      const userMessage = createSecureError('Erro inesperado. Tente novamente.', import.meta.env.DEV)
+      toast.error(userMessage)
       return { success: false, error: 'Erro inesperado' }
     } finally {
       setLoading(false)

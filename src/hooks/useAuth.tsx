@@ -1,6 +1,8 @@
+
 import { useState, useEffect } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { createSecureError } from '@/lib/validation'
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null)
@@ -12,12 +14,11 @@ export const useAuth = () => {
     
     const initAuth = async () => {
       try {
-        // Get initial session
         const { data: { session }, error } = await supabase.auth.getSession()
         if (error) {
-          console.error('useAuth: Error getting session:', error)
+          console.error('useAuth: Error getting session:', error.message)
         } else {
-          console.log('useAuth: Initial session:', session?.user?.email || 'No user')
+          console.log('useAuth: Initial session loaded')
           setSession(session)
           setUser(session?.user ?? null)
         }
@@ -30,10 +31,9 @@ export const useAuth = () => {
 
     initAuth()
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('useAuth: Auth state changed:', event, session?.user?.email || 'No user')
+        console.log('useAuth: Auth state changed:', event)
         setSession(session)
         setUser(session?.user ?? null)
         setLoading(false)
@@ -48,31 +48,45 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string) => {
     try {
-      console.log('useAuth: Attempting signup for:', email)
+      console.log('useAuth: Attempting signup')
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
       })
-      console.log('useAuth: SignUp result:', { data: data?.user?.email, error: error?.message })
+      
+      if (error) {
+        console.error('useAuth: SignUp error:', error.message)
+      } else {
+        console.log('useAuth: SignUp successful')
+      }
+      
       return { data, error }
     } catch (err) {
       console.error('useAuth: SignUp error:', err)
-      return { data: null, error: err as any }
+      const secureError = createSecureError('Erro no cadastro', import.meta.env.DEV)
+      return { data: null, error: { message: secureError } }
     }
   }
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('useAuth: Attempting signin for:', email)
+      console.log('useAuth: Attempting signin')
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
-      console.log('useAuth: SignIn result:', { data: data?.user?.email, error: error?.message })
+      
+      if (error) {
+        console.error('useAuth: SignIn error:', error.message)
+      } else {
+        console.log('useAuth: SignIn successful')
+      }
+      
       return { data, error }
     } catch (err) {
       console.error('useAuth: SignIn error:', err)
-      return { data: null, error: err as any }
+      const secureError = createSecureError('Erro no login', import.meta.env.DEV)
+      return { data: null, error: { message: secureError } }
     }
   }
 
@@ -80,11 +94,16 @@ export const useAuth = () => {
     try {
       console.log('useAuth: Attempting signout')
       const { error } = await supabase.auth.signOut()
-      console.log('useAuth: SignOut result:', { error: error?.message })
+      if (error) {
+        console.error('useAuth: SignOut error:', error.message)
+      } else {
+        console.log('useAuth: SignOut successful')
+      }
       return { error }
     } catch (err) {
       console.error('useAuth: SignOut error:', err)
-      return { error: err as any }
+      const secureError = createSecureError('Erro no logout', import.meta.env.DEV)
+      return { error: { message: secureError } }
     }
   }
 
@@ -97,11 +116,18 @@ export const useAuth = () => {
           redirectTo: `${window.location.origin}/dashboard`
         }
       })
-      console.log('useAuth: Google SignIn result:', { data, error: error?.message })
+      
+      if (error) {
+        console.error('useAuth: Google SignIn error:', error.message)
+      } else {
+        console.log('useAuth: Google SignIn initiated')
+      }
+      
       return { data, error }
     } catch (err) {
       console.error('useAuth: Google SignIn error:', err)
-      return { data: null, error: err as any }
+      const secureError = createSecureError('Erro no login com Google', import.meta.env.DEV)
+      return { data: null, error: { message: secureError } }
     }
   }
 
@@ -114,11 +140,18 @@ export const useAuth = () => {
           redirectTo: `${window.location.origin}/dashboard`
         }
       })
-      console.log('useAuth: Facebook SignIn result:', { data, error: error?.message })
+      
+      if (error) {
+        console.error('useAuth: Facebook SignIn error:', error.message)
+      } else {
+        console.log('useAuth: Facebook SignIn initiated')
+      }
+      
       return { data, error }
     } catch (err) {
       console.error('useAuth: Facebook SignIn error:', err)
-      return { data: null, error: err as any }
+      const secureError = createSecureError('Erro no login com Facebook', import.meta.env.DEV)
+      return { data: null, error: { message: secureError } }
     }
   }
 

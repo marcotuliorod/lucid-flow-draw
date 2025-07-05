@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useAuth } from './useAuth'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
+import { emailSchema, sanitizeEmail, createSecureError } from '@/lib/validation'
 
 export const useSignIn = () => {
   const [loading, setLoading] = useState(false)
@@ -13,19 +14,32 @@ export const useSignIn = () => {
     setLoading(true)
 
     try {
-      console.log('useSignIn: Starting signin process for:', email)
+      console.log('useSignIn: Starting signin process')
 
-      if (!email || !password) {
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeEmail(email)
+      
+      // Basic validation
+      if (!sanitizedEmail || !password) {
         toast.error('Email e senha são obrigatórios')
         setLoading(false)
         return { success: false, error: 'Campos obrigatórios' }
       }
 
-      const { data, error } = await signIn(email, password)
+      // Validate email format
+      const emailValidation = emailSchema.safeParse(sanitizedEmail)
+      if (!emailValidation.success) {
+        toast.error('Email inválido')
+        setLoading(false)
+        return { success: false, error: 'Email inválido' }
+      }
+
+      const { data, error } = await signIn(sanitizedEmail, password)
       
       if (error) {
-        console.error('useSignIn: Error during signin:', error)
+        console.error('useSignIn: Error during signin:', error.message)
         
+        // Secure error handling
         if (error.message?.includes('Invalid login credentials') || 
             error.message?.includes('Invalid email or password')) {
           toast.error('Email ou senha incorretos')
@@ -34,19 +48,19 @@ export const useSignIn = () => {
           toast.error('Confirme seu email antes de fazer login')
           return { success: false, error: 'Email não confirmado' }
         } else if (error.message?.includes('not configured')) {
-          toast.error('Sistema de autenticação não configurado')
+          toast.error('Sistema temporariamente indisponível. Tente novamente mais tarde.')
           return { success: false, error: 'Sistema não configurado' }
         } else {
-          toast.error('Erro ao fazer login. Tente novamente.')
-          return { success: false, error: error.message }
+          const userMessage = createSecureError('Erro ao fazer login. Tente novamente.', import.meta.env.DEV)
+          toast.error(userMessage)
+          return { success: false, error: 'Erro no login' }
         }
       }
 
       if (data?.user) {
-        console.log('useSignIn: User signed in successfully:', data.user.email)
+        console.log('useSignIn: User signed in successfully')
         toast.success('Login realizado com sucesso!')
         
-        // Pequeno delay para mostrar o toast antes de redirecionar
         setTimeout(() => {
           navigate('/dashboard')
         }, 1000)
@@ -58,7 +72,8 @@ export const useSignIn = () => {
       
     } catch (err) {
       console.error('useSignIn: Unexpected error:', err)
-      toast.error('Erro inesperado. Tente novamente.')
+      const userMessage = createSecureError('Erro inesperado. Tente novamente.', import.meta.env.DEV)
+      toast.error(userMessage)
       return { success: false, error: 'Erro inesperado' }
     } finally {
       setLoading(false)

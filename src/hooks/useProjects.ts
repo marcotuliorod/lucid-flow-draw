@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { CanvasElement } from '@/components/editor/types'
+import { projectSchema, sanitizeProjectName, isValidProjectId, createSecureError } from '@/lib/validation'
 
 export interface Project {
   id: string
@@ -29,7 +30,7 @@ export const useProjects = (userId: string | undefined) => {
 
     try {
       setLoading(true)
-      console.log('Fetching projects for user:', userId)
+      console.log('Fetching projects for user')
       
       const query = supabase
         .from('projects')
@@ -40,9 +41,11 @@ export const useProjects = (userId: string | undefined) => {
       const { data, error } = await query
 
       if (error) {
-        console.error('Error fetching projects:', error)
+        console.error('Error fetching projects:', error.message)
+        const userMessage = createSecureError('Erro ao carregar projetos', import.meta.env.DEV)
+        console.error(userMessage)
       } else {
-        console.log('Projects fetched:', data)
+        console.log('Projects fetched successfully')
         setProjects(data || [])
       }
     } catch (err) {
@@ -56,11 +59,29 @@ export const useProjects = (userId: string | undefined) => {
     if (!userId) return { error: 'User not authenticated' }
 
     try {
-      console.log('Saving project:', { name, elementsCount: elements.length, projectId })
+      // Sanitize and validate inputs
+      const sanitizedName = sanitizeProjectName(name)
+      
+      const validationResult = projectSchema.safeParse({
+        name: sanitizedName,
+        elements
+      })
+
+      if (!validationResult.success) {
+        const errorMessage = validationResult.error.errors[0].message
+        return { error: errorMessage }
+      }
+
+      // Validate project ID if updating
+      if (projectId && !isValidProjectId(projectId)) {
+        return { error: 'ID do projeto inválido' }
+      }
+
+      console.log('Saving project with validation passed')
       
       const projectData = {
-        name,
-        elements,
+        name: sanitizedName,
+        elements: validationResult.data.elements,
         user_id: userId,
         updated_at: new Date().toISOString()
       }
@@ -89,17 +110,18 @@ export const useProjects = (userId: string | undefined) => {
       }
 
       if (result.error) {
-        console.error('Error saving project:', result.error)
-        return { error: result.error }
+        console.error('Error saving project:', result.error.message)
+        const userMessage = createSecureError('Erro ao salvar projeto', import.meta.env.DEV)
+        return { error: userMessage }
       }
 
-      console.log('Project saved successfully:', result.data)
-      // Refresh projects list
+      console.log('Project saved successfully')
       await fetchProjects()
       return { data: result.data }
     } catch (err) {
       console.error('Unexpected error saving project:', err)
-      return { error: err as any }
+      const userMessage = createSecureError('Erro inesperado ao salvar projeto', import.meta.env.DEV)
+      return { error: userMessage }
     }
   }
 
@@ -107,7 +129,12 @@ export const useProjects = (userId: string | undefined) => {
     if (!userId) return { error: 'User not authenticated' }
 
     try {
-      console.log('Deleting project:', projectId)
+      // Validate project ID
+      if (!isValidProjectId(projectId)) {
+        return { error: 'ID do projeto inválido' }
+      }
+
+      console.log('Deleting project with validation passed')
       
       const query = supabase
         .from('projects')
@@ -118,17 +145,18 @@ export const useProjects = (userId: string | undefined) => {
       const { error } = await query
 
       if (error) {
-        console.error('Error deleting project:', error)
-        return { error }
+        console.error('Error deleting project:', error.message)
+        const userMessage = createSecureError('Erro ao deletar projeto', import.meta.env.DEV)
+        return { error: userMessage }
       }
 
       console.log('Project deleted successfully')
-      // Refresh projects list
       await fetchProjects()
       return { error: null }
     } catch (err) {
       console.error('Unexpected error deleting project:', err)
-      return { error: err as any }
+      const userMessage = createSecureError('Erro inesperado ao deletar projeto', import.meta.env.DEV)
+      return { error: userMessage }
     }
   }
 
@@ -136,7 +164,12 @@ export const useProjects = (userId: string | undefined) => {
     if (!userId) return { error: 'User not authenticated' }
 
     try {
-      console.log('Getting project:', projectId)
+      // Validate project ID
+      if (!isValidProjectId(projectId)) {
+        return { error: 'ID do projeto inválido' }
+      }
+
+      console.log('Getting project with validation passed')
       
       const query = supabase
         .from('projects')
@@ -148,15 +181,17 @@ export const useProjects = (userId: string | undefined) => {
       const { data, error } = await query
 
       if (error) {
-        console.error('Error fetching project:', error)
-        return { error }
+        console.error('Error fetching project:', error.message)
+        const userMessage = createSecureError('Erro ao carregar projeto', import.meta.env.DEV)
+        return { error: userMessage }
       }
 
-      console.log('Project fetched successfully:', data)
+      console.log('Project fetched successfully')
       return { data, error: null }
     } catch (err) {
       console.error('Unexpected error fetching project:', err)
-      return { error: err as any }
+      const userMessage = createSecureError('Erro inesperado ao carregar projeto', import.meta.env.DEV)
+      return { error: userMessage }
     }
   }
 
