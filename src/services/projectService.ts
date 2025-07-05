@@ -1,4 +1,3 @@
-
 import { supabase } from '@/lib/supabase'
 import { CanvasElement } from '@/components/editor/types'
 import { 
