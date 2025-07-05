@@ -131,30 +131,6 @@ export const useAuth = () => {
     }
   }
 
-  const signInWithFacebook = async () => {
-    try {
-      console.log('useAuth: Attempting Facebook signin')
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'facebook',
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`
-        }
-      })
-      
-      if (error) {
-        console.error('useAuth: Facebook SignIn error:', error.message)
-      } else {
-        console.log('useAuth: Facebook SignIn initiated')
-      }
-      
-      return { data, error }
-    } catch (err) {
-      console.error('useAuth: Facebook SignIn error:', err)
-      const secureError = createSecureError('Erro no login com Facebook', import.meta.env.DEV)
-      return { data: null, error: { message: secureError } }
-    }
-  }
-
   return {
     user,
     session,
@@ -162,7 +138,6 @@ export const useAuth = () => {
     signUp,
     signIn,
     signOut,
-    signInWithGoogle,
-    signInWithFacebook
+    signInWithGoogle
   }
 }
