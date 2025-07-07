@@ -68,34 +68,39 @@ const ProcessEditor = () => {
     console.log('ProcessEditor: Loading project with ID:', projectId);
     setLoading(true);
     try {
+      console.log('ProcessEditor: Calling getProject...');
       const { data, error } = await getProject(projectId);
-      console.log('ProcessEditor: Project data received:', data);
-      console.log('ProcessEditor: Project error:', error);
+      console.log('ProcessEditor: getProject returned - data:', data, 'error:', error);
       
       if (error) {
-        console.error('Error loading project:', error);
+        console.error('ProcessEditor: Error loading project:', error);
         toast.error("Erro ao carregar projeto");
+        setLoading(false);
         navigate('/dashboard');
         return;
       }
 
       if (data) {
+        console.log('ProcessEditor: Project data found, setting state...');
         console.log('ProcessEditor: Setting project data - Name:', data.name, 'Elements:', data.elements);
         setProjectName(data.name);
         setCurrentProjectId(data.id);
+        console.log('ProcessEditor: About to call loadElements with:', data.elements);
         loadElements(data.elements || []);
+        console.log('ProcessEditor: loadElements called, setting loading to false');
+        setLoading(false);
         toast.success("Projeto carregado com sucesso!");
       } else {
         console.warn('ProcessEditor: No data received from getProject');
         toast.error("Projeto não encontrado");
+        setLoading(false);
         navigate('/dashboard');
       }
     } catch (err) {
-      console.error('Unexpected error loading project:', err);
+      console.error('ProcessEditor: Unexpected error loading project:', err);
       toast.error("Erro inesperado ao carregar projeto");
-      navigate('/dashboard');
-    } finally {
       setLoading(false);
+      navigate('/dashboard');
     }
   };
 
