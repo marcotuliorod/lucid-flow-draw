@@ -25,8 +25,18 @@ export class GetProjectService extends BaseProjectService {
         return this.handleError(error, userId, 'get_project', 'Erro ao carregar projeto')
       }
 
-      console.log('Project fetched successfully')
-      return { data, error: null }
+       if (!data) {
+         return { error: 'Projeto não encontrado' }
+       }
+
+       // Transform the data to match Project type
+       const project = {
+         ...data,
+         elements: Array.isArray(data.elements) ? data.elements as any[] : []
+       }
+
+       console.log('Project fetched successfully')
+       return { data: project }
     } catch (err) {
       return this.handleUnexpectedError(err, userId, 'get_project', 'Erro inesperado ao carregar projeto')
     }

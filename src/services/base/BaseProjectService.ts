@@ -1,5 +1,5 @@
 
-import { supabase } from '@/lib/supabase'
+import { supabase } from '@/integrations/supabase/client'
 import { logSecurityEvent } from '@/lib/security'
 import { createSecureError } from '@/lib/validation'
 import { ProjectOperationResult } from '@/types/project'
