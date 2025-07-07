@@ -38,7 +38,7 @@ const EditorHeader = ({
   const navigate = useNavigate();
 
   return (
-    <header className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border-b border-slate-200/50 dark:border-slate-700/50 px-6 py-4">
+    <header className="bg-white dark:bg-slate-800 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-6">
           <Button 
@@ -52,7 +52,7 @@ const EditorHeader = ({
           </Button>
           <Separator orientation="vertical" className="h-6" />
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
               <Workflow className="h-4 w-4 text-white" />
             </div>
             <Input
@@ -61,7 +61,7 @@ const EditorHeader = ({
               className="text-xl font-light border-none p-0 h-auto bg-transparent focus-visible:ring-0 text-slate-900 dark:text-white min-w-48"
             />
           </div>
-          <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border-0 font-light">
+          <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 border-0 font-light">
             {elementsCount} elementos
           </Badge>
         </div>
@@ -90,7 +90,7 @@ const EditorHeader = ({
           <Separator orientation="vertical" className="h-6" />
           <Button 
             onClick={onExportPDF}
-            className="bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 hover:from-purple-700 hover:via-pink-600 hover:to-rose-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+            className="bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <Download className="h-4 w-4 mr-2" />
             Exportar PDF

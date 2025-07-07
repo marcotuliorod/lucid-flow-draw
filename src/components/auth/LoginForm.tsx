@@ -62,11 +62,11 @@ const LoginForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-6">
-      <Card className="w-full max-w-md p-8 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border-0 shadow-2xl rounded-2xl">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-6">
+      <Card className="w-full max-w-md p-8 bg-white dark:bg-slate-800 backdrop-blur-md border-0 shadow-2xl rounded-2xl">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center space-x-3 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
               <PenTool className="h-5 w-5 text-white" />
             </div>
             <span className="text-2xl font-light text-slate-900 dark:text-white tracking-tight">Free Flow Process</span>
@@ -155,7 +155,7 @@ const LoginForm = () => {
               <Button
                 type="submit"
                 disabled={signInLoading}
-                className="w-full bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 hover:from-blue-700 hover:via-cyan-600 hover:to-teal-600 text-white font-medium rounded-lg"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg"
               >
                 {signInLoading ? 'Entrando...' : 'Entrar'}
               </Button>
