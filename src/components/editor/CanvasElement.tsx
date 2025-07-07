@@ -108,12 +108,18 @@ const CanvasElementComponent = ({
 
   return (
     <div
-      className={`absolute border cursor-move hover:shadow-lg transition-all duration-200 flex items-center justify-center text-sm font-medium text-white ${
+      className={`absolute border cursor-move hover:shadow-lg transition-all duration-200 flex items-center justify-center text-sm font-medium text-white z-30 ${
         isSelected 
           ? 'border-orange-500 ring-2 ring-orange-500/50 shadow-lg'
           : 'border-white/20 shadow-md'
       }`}
-      style={elementStyle}
+      style={{
+        ...elementStyle,
+        // FORÇAR VISIBILIDADE PARA DEBUG
+        backgroundColor: '#FF0000 !important',
+        border: '4px solid #FFFF00',
+        zIndex: 30
+      }}
       onClick={() => onElementClick(element.id)}
       onDoubleClick={() => onElementDoubleClick(element.id)}
     >

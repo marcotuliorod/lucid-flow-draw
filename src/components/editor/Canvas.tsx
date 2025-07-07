@@ -170,7 +170,28 @@ const Canvas = ({
           transformOrigin: 'top left'
         }}
       >
-        {/* Debug info removido após correção */}
+        {/* DEBUG - ELEMENTOS SENDO RENDERIZADOS */}
+        <div className="absolute top-4 left-4 z-50 bg-red-500 text-white p-4 font-bold">
+          ELEMENTOS: {elements.length}
+          {elements.map((el, i) => (
+            <div key={el.id} className="text-xs">
+              {i+1}: {el.type} em ({Math.round(el.x)}, {Math.round(el.y)}) - {el.width}x{el.height}
+            </div>
+          ))}
+        </div>
+        
+        {/* RETÂNGULO TESTE ABSOLUTO */}
+        <div 
+          className="absolute bg-red-600 border-4 border-yellow-400 flex items-center justify-center text-white font-bold z-40"
+          style={{
+            left: 50,
+            top: 150,
+            width: 200,
+            height: 100
+          }}
+        >
+          TESTE VISÍVEL
+        </div>
         
         {/* Elementos existentes */}
         {elements.map((element) => {
