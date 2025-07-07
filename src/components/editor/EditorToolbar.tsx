@@ -101,6 +101,7 @@ const EditorToolbar = ({ selectedTool, onToolSelect, onImageUpload }: EditorTool
               }`}
               onClick={isImageTool ? handleImageClick : () => onToolSelect(tool.id)}
               title={tool.label}
+              aria-label={tool.label}
             >
               <Icon className="h-4 w-4" />
             </Button>

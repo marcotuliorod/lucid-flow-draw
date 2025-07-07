@@ -151,6 +151,7 @@ const EditorHeader = ({
               disabled={!canUndo}
               className="h-8 w-8 p-0"
               title="Desfazer (Ctrl+Z)"
+              aria-label="Desfazer"
             >
               <Undo className="h-4 w-4" />
             </Button>
@@ -161,6 +162,7 @@ const EditorHeader = ({
               disabled={!canRedo}
               className="h-8 w-8 p-0"
               title="Refazer (Ctrl+Y)"
+              aria-label="Refazer"
             >
               <Redo className="h-4 w-4" />
             </Button>
@@ -173,6 +175,7 @@ const EditorHeader = ({
               onClick={onZoomOut}
               className="h-8 w-8 p-0"
               title="Diminuir zoom"
+              aria-label="Diminuir zoom"
             >
               <ZoomOut className="h-4 w-4" />
             </Button>
@@ -185,6 +188,7 @@ const EditorHeader = ({
               onClick={onZoomIn}
               className="h-8 w-8 p-0"
               title="Aumentar zoom"
+              aria-label="Aumentar zoom"
             >
               <ZoomIn className="h-4 w-4" />
             </Button>
@@ -197,6 +201,7 @@ const EditorHeader = ({
               onClick={onAlignLeft}
               className="h-8 w-8 p-0"
               title="Alinhar à esquerda"
+              aria-label="Alinhar à esquerda"
             >
               <AlignLeft className="h-4 w-4" />
             </Button>
@@ -206,6 +211,7 @@ const EditorHeader = ({
               onClick={onAlignCenter}
               className="h-8 w-8 p-0"
               title="Alinhar ao centro"
+              aria-label="Alinhar ao centro"
             >
               <AlignCenter className="h-4 w-4" />
             </Button>
@@ -215,6 +221,7 @@ const EditorHeader = ({
               onClick={onAlignRight}
               className="h-8 w-8 p-0"
               title="Alinhar à direita"
+              aria-label="Alinhar à direita"
             >
               <AlignRight className="h-4 w-4" />
             </Button>
@@ -227,6 +234,7 @@ const EditorHeader = ({
               onClick={onGroup}
               className="h-8 w-8 p-0"
               title="Agrupar elementos"
+              aria-label="Agrupar elementos"
             >
               <Group className="h-4 w-4" />
             </Button>
@@ -236,8 +244,9 @@ const EditorHeader = ({
               onClick={onUngroup}
               className="h-8 w-8 p-0"
               title="Desagrupar elementos"
+              aria-label="Desagrupar elementos"
             >
-              <Ungroup className="h-8 w-8 p-0" />
+              <Ungroup className="h-4 w-4" />
             </Button>
           </div>
 
@@ -247,6 +256,7 @@ const EditorHeader = ({
             onClick={onToggleGrid}
             className={`h-8 w-8 p-0 ${showGrid ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400' : ''}`}
             title="Alternar grade"
+            aria-label="Alternar grade"
           >
             <Grid3x3 className="h-4 w-4" />
           </Button>
