@@ -12,9 +12,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProjects } from "@/hooks/useProjects";
 
 const ProcessEditor = () => {
+  console.log('ProcessEditor: Component initialized');
   const navigate = useNavigate();
   const { id } = useParams();
+  console.log('ProcessEditor: Route params - id:', id);
   const { user } = useAuth();
+  console.log('ProcessEditor: User:', user?.id);
   const { saveProject, getProject } = useProjects(user?.id);
   
   const [projectName, setProjectName] = useState("Novo Processo");
@@ -54,7 +57,9 @@ const ProcessEditor = () => {
 
   // Load project if editing existing one
   useEffect(() => {
+    console.log('ProcessEditor: useEffect triggered - id:', id, 'user:', user?.id);
     if (id && id !== 'new' && user) {
+      console.log('ProcessEditor: Calling loadProject');
       loadProject(id);
     }
   }, [id, user]);
