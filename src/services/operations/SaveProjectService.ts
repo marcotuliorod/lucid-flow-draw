@@ -1,78 +1,54 @@
 
 import { BaseProjectService } from '../base/BaseProjectService'
-import { CanvasElement } from '@/components/editor/types'
-import { Project, ProjectOperationResult } from '@/types/project'
-import { 
-  projectSchema, 
-  sanitizeProjectName, 
-  isValidProjectId, 
-  isValidUserId,
-  validateAndSanitizeInput 
-} from '@/lib/validation'
+import { isValidUserId, isValidProjectId, validateAndSanitizeInput } from '@/lib/validation'
+import { ProjectOperationResult, Project } from '@/types/project'
 
 export class SaveProjectService extends BaseProjectService {
   async execute(
     userId: string, 
     name: string, 
-    elements: CanvasElement[], 
+    elements: any[], 
     projectId?: string
   ): Promise<ProjectOperationResult<Project>> {
     if (!isValidUserId(userId)) {
-      return { error: 'ID do usuário inválido' }
+      return { error: 'ID de usuário inválido' }
+    }
+
+    if (projectId && !isValidProjectId(projectId)) {
+      return { error: 'ID de projeto inválido' }
     }
 
     try {
-      const sanitizedName = sanitizeProjectName(name)
+      console.log('Saving project with validation...')
       
-      const validation = validateAndSanitizeInput({
-        name: sanitizedName,
-        elements
-      }, projectSchema)
-
+      const validation = validateAndSanitizeInput(name, elements)
       if (!validation.success) {
         return { error: validation.error }
       }
 
-      if (projectId && !isValidProjectId(projectId)) {
-        return { error: 'ID do projeto inválido' }
-      }
-
-      console.log('Saving project with validation passed')
-      
       const projectData = {
-        name: validation.data.name,
-        elements: validation.data.elements,
         user_id: userId,
+        name: validation.data.name || 'Projeto sem nome',
+        elements: validation.data.elements || [],
         updated_at: new Date().toISOString()
       }
 
-      let result
+      let query = this.supabase.from('projects')
+
       if (projectId) {
-        const query = this.supabase
-          .from('projects')
-          .update(projectData)
-          .eq('id', projectId)
-          .eq('user_id', userId)
-          .select()
-          .single()
-        
-        result = await query
+        query = query.update(projectData).eq('id', projectId).eq('user_id', userId)
       } else {
-        const query = this.supabase
-          .from('projects')
-          .insert({ ...projectData, created_at: new Date().toISOString() })
-          .select()
-          .single()
-        
-        result = await query
+        query = query.insert([projectData])
       }
 
-      if (result.error) {
-        return this.handleError(result.error, userId, 'save_project', 'Erro ao salvar projeto')
+      const { data, error } = await query.select().single()
+
+      if (error) {
+        return this.handleError(error, userId, 'save_project', 'Erro ao salvar projeto')
       }
 
       console.log('Project saved successfully')
-      return { data: result.data }
+      return { data, error: null }
     } catch (err) {
       return this.handleUnexpectedError(err, userId, 'save_project', 'Erro inesperado ao salvar projeto')
     }

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { 
-  PenTool, 
+  Workflow, 
   ArrowLeft,
   Save,
   Undo,
@@ -52,8 +52,8 @@ const EditorHeader = ({
           </Button>
           <Separator orientation="vertical" className="h-6" />
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-              <PenTool className="h-4 w-4 text-white" />
+            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+              <Workflow className="h-4 w-4 text-white" />
             </div>
             <Input
               value={projectName}
@@ -90,7 +90,7 @@ const EditorHeader = ({
           <Separator orientation="vertical" className="h-6" />
           <Button 
             onClick={onExportPDF}
-            className="bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 hover:from-blue-700 hover:via-cyan-600 hover:to-teal-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+            className="bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 hover:from-purple-700 hover:via-pink-600 hover:to-rose-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <Download className="h-4 w-4 mr-2" />
             Exportar PDF

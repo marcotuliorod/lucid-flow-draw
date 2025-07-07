@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
-  PenTool, 
+  Workflow, 
   Plus, 
   FileText, 
   Calendar, 
@@ -59,11 +59,11 @@ const Dashboard = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
-                <PenTool className="h-5 w-5 text-white" />
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                <Workflow className="h-5 w-5 text-white" />
               </div>
               <div>
-                <span className="text-2xl font-light text-slate-900 dark:text-white tracking-tight">ProcessFlow</span>
+                <span className="text-2xl font-light text-slate-900 dark:text-white tracking-tight">Free Flow Process</span>
                 <p className="text-sm text-slate-600 dark:text-slate-400">Bem-vindo, {user?.email}</p>
               </div>
             </div>
@@ -88,7 +88,7 @@ const Dashboard = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-light text-slate-900 dark:text-white mb-2">
-              Meus Projetos
+              Meus Fluxos
             </h1>
             <p className="text-slate-600 dark:text-slate-400 font-light">
               Gerencie seus diagramas de processo
@@ -96,10 +96,10 @@ const Dashboard = () => {
           </div>
           <Button 
             onClick={() => navigate('/editor/new')}
-            className="bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 hover:from-blue-700 hover:via-cyan-600 hover:to-teal-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+            className="bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 hover:from-purple-700 hover:via-pink-600 hover:to-rose-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Novo Projeto
+            Novo Fluxo
           </Button>
         </div>
 
@@ -107,7 +107,7 @@ const Dashboard = () => {
         <div className="relative mb-8">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
           <Input
-            placeholder="Buscar projetos..."
+            placeholder="Buscar fluxos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 rounded-lg border-slate-200 dark:border-slate-600"
@@ -120,8 +120,8 @@ const Dashboard = () => {
             <Card key={project.id} className="p-6 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl group">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/30 dark:to-cyan-900/30 rounded-xl flex items-center justify-center">
-                    <FileText className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-xl flex items-center justify-center">
+                    <FileText className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div>
                     <h3 className="font-medium text-slate-900 dark:text-white truncate max-w-32">
@@ -145,7 +145,7 @@ const Dashboard = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate(`/editor/${project.id}`)}
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20"
                 >
                   <Edit className="h-4 w-4 mr-2" />
                   Editar
@@ -169,18 +169,18 @@ const Dashboard = () => {
               <FileText className="h-8 w-8 text-slate-400" />
             </div>
             <h3 className="text-xl font-light text-slate-900 dark:text-white mb-2">
-              {searchTerm ? 'Nenhum projeto encontrado' : 'Nenhum projeto ainda'}
+              {searchTerm ? 'Nenhum fluxo encontrado' : 'Nenhum fluxo ainda'}
             </h3>
             <p className="text-slate-600 dark:text-slate-400 font-light mb-6">
-              {searchTerm ? 'Tente outro termo de busca' : 'Comece criando seu primeiro diagrama de processo'}
+              {searchTerm ? 'Tente outro termo de busca' : 'Comece criando seu primeiro fluxo de processo'}
             </p>
             {!searchTerm && (
               <Button 
                 onClick={() => navigate('/editor/new')}
-                className="bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-500 hover:from-blue-700 hover:via-cyan-600 hover:to-teal-600 text-white font-medium rounded-lg"
+                className="bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 hover:from-purple-700 hover:via-pink-600 hover:to-rose-600 text-white font-medium rounded-lg"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Criar Primeiro Projeto
+                Criar Primeiro Fluxo
               </Button>
             )}
           </div>
