@@ -166,12 +166,17 @@ const Canvas = ({
         style={{
           backgroundImage: showGrid ? `radial-gradient(circle, #e2e8f0 1px, transparent 1px)` : 'none',
           backgroundSize: '24px 24px',
-          transform: `scale(${zoom / 100})`
+          transform: `scale(${zoom / 100})`,
+          transformOrigin: 'top left'
         }}
       >
         {/* Debug info */}
-        <div className="absolute top-4 left-4 text-xs text-gray-500 bg-white/80 p-2 rounded">
-          Elements: {elements.length} | Tool: {selectedTool} | Drawing: {isDrawing ? 'yes' : 'no'}
+        <div className="absolute top-4 left-4 text-xs text-red-600 bg-yellow-200 p-2 rounded z-50 border-2 border-red-500">
+          <div>Elements: {elements.length} | Tool: {selectedTool} | Drawing: {isDrawing ? 'yes' : 'no'}</div>
+          <div>Zoom: {zoom}%</div>
+          {elements.length > 0 && (
+            <div>First element: {elements[0].type} at ({elements[0].x}, {elements[0].y})</div>
+          )}
         </div>
         
         {/* Elementos existentes */}

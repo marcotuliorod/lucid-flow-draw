@@ -90,7 +90,8 @@ const CanvasElementComponent = ({
         return {
           ...baseStyle,
           borderRadius: '12px',
-          background: 'linear-gradient(135deg, #64748b, #475569)',
+          background: element.color || '#3B82F6',
+          border: '2px solid rgba(255,255,255,0.2)'
         };
       default:
         return {
