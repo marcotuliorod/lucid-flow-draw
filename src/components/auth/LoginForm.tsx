@@ -69,7 +69,7 @@ const LoginForm = () => {
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
               <PenTool className="h-5 w-5 text-white" />
             </div>
-            <span className="text-2xl font-light text-slate-900 dark:text-white tracking-tight">ProcessFlow</span>
+            <span className="text-2xl font-light text-slate-900 dark:text-white tracking-tight">Free Flow Process</span>
           </div>
           <h2 className="text-xl font-light text-slate-700 dark:text-slate-300">
             Entre ou crie sua conta
