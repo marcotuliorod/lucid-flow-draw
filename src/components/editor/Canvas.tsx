@@ -156,7 +156,7 @@ const Canvas = ({
     <main className="flex-1 relative overflow-hidden">
       <div 
         ref={canvasRef}
-        className={`w-full h-full bg-white dark:bg-slate-800 relative ${
+        className={`w-full h-full relative ${
           selectedTool === 'select' ? 'cursor-default' : 
           selectedTool === 'arrow' ? 'cursor-crosshair' : 'cursor-copy'
         }`}
@@ -164,10 +164,12 @@ const Canvas = ({
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         style={{
-          backgroundImage: showGrid ? `radial-gradient(circle, #e2e8f0 1px, transparent 1px)` : 'none',
-          backgroundSize: '24px 24px',
+          background: 'linear-gradient(45deg, #ff0000 25%, #00ff00 25%, #00ff00 50%, #ff0000 50%, #ff0000 75%, #00ff00 75%)', // Debug background
+          backgroundSize: '50px 50px',
           transform: `scale(${zoom / 100})`,
-          transformOrigin: 'top left'
+          transformOrigin: 'top left',
+          minHeight: '100vh',
+          position: 'relative'
         }}
       >
         {/* Debug info - temporarily hidden to check interaction */}
