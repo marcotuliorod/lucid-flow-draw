@@ -22,7 +22,7 @@ export class SaveProjectService extends BaseProjectService {
       console.log('Saving project with validation...')
       
       const validation = validateAndSanitizeInput({ name, elements }, projectSchema)
-      if (!validation.success) {
+      if (validation.success === false) {
         return { error: validation.error }
       }
 
