@@ -27,6 +27,8 @@ interface CanvasProps {
   onTextSubmit: () => void;
   onKeyPress: (e: React.KeyboardEvent) => void;
   onToolSelect: (toolId: string) => void;
+  showGrid?: boolean;
+  zoom?: number;
 }
 
 const Canvas = ({
@@ -50,7 +52,9 @@ const Canvas = ({
   onTextChange,
   onTextSubmit,
   onKeyPress,
-  onToolSelect
+  onToolSelect,
+  showGrid = true,
+  zoom = 100
 }: CanvasProps) => {
   // Renderizar linha da seta durante o desenho
   const renderArrowPreview = () => {
@@ -156,8 +160,9 @@ const Canvas = ({
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         style={{
-          backgroundImage: `radial-gradient(circle, #e2e8f0 1px, transparent 1px)`,
-          backgroundSize: '24px 24px'
+          backgroundImage: showGrid ? `radial-gradient(circle, #e2e8f0 1px, transparent 1px)` : 'none',
+          backgroundSize: '24px 24px',
+          transform: `scale(${zoom / 100})`
         }}
       >
         {/* Elementos existentes */}

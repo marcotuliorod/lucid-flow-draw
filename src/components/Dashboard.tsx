@@ -5,6 +5,20 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { 
   Workflow, 
   Plus, 
   FileText, 
@@ -12,7 +26,12 @@ import {
   Search,
   Trash2,
   Edit,
-  LogOut
+  LogOut,
+  Copy,
+  Download,
+  Share,
+  MoreHorizontal,
+  Pen
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -23,8 +42,10 @@ import { toast } from "sonner";
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { projects, loading, deleteProject } = useProjects(user?.id);
+  const { projects, loading, deleteProject, saveProject } = useProjects(user?.id);
   const [searchTerm, setSearchTerm] = useState("");
+  const [renamingProject, setRenamingProject] = useState<{ id: string; name: string } | null>(null);
+  const [newName, setNewName] = useState("");
 
   const handleLogout = async () => {
     await signOut();
@@ -38,6 +59,63 @@ const Dashboard = () => {
     } else {
       toast.success("Projeto deletado com sucesso!");
     }
+  };
+
+  const handleDuplicateProject = async (project: any) => {
+    try {
+      const { data, error } = await saveProject(
+        `${project.name} - Cópia`,
+        project.elements
+      );
+      
+      if (error) {
+        toast.error("Erro ao duplicar projeto");
+      } else {
+        toast.success("Projeto duplicado com sucesso!");
+      }
+    } catch (err) {
+      toast.error("Erro inesperado ao duplicar projeto");
+    }
+  };
+
+  const handleRenameProject = async () => {
+    if (!renamingProject || !newName.trim()) return;
+    
+    try {
+      const project = projects.find(p => p.id === renamingProject.id);
+      if (!project) return;
+
+      const { error } = await saveProject(
+        newName.trim(),
+        project.elements,
+        project.id
+      );
+      
+      if (error) {
+        toast.error("Erro ao renomear projeto");
+      } else {
+        toast.success("Projeto renomeado com sucesso!");
+        setRenamingProject(null);
+        setNewName("");
+      }
+    } catch (err) {
+      toast.error("Erro inesperado ao renomear projeto");
+    }
+  };
+
+  const handleExportProject = (project: any) => {
+    // Placeholder para funcionalidade de exportação
+    toast.info("Funcionalidade de exportação em desenvolvimento");
+  };
+
+  const handleShareProject = (project: any) => {
+    // Placeholder para funcionalidade de compartilhamento
+    toast.info("Funcionalidade de compartilhamento em desenvolvimento");
+  };
+
+  const startRename = (project: any) => {
+    setRenamingProject({ id: project.id, name: project.name });
+    setNewName(project.name);
   };
 
   const filteredProjects = projects.filter(project => 
@@ -148,16 +226,46 @@ const Dashboard = () => {
                   className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20"
                 >
                   <Edit className="h-4 w-4 mr-2" />
-                  Editar
+                  Abrir
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDeleteProject(project.id)}
-                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => handleDuplicateProject(project)}>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Duplicar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => startRename(project)}>
+                      <Pen className="h-4 w-4 mr-2" />
+                      Renomear
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleExportProject(project)}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Exportar
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleShareProject(project)}>
+                      <Share className="h-4 w-4 mr-2" />
+                      Compartilhar
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => handleDeleteProject(project.id)}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Excluir
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </Card>
           ))}
@@ -186,6 +294,36 @@ const Dashboard = () => {
           </div>
         )}
       </main>
+
+      {/* Rename Dialog */}
+      <Dialog open={!!renamingProject} onOpenChange={() => setRenamingProject(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Renomear Projeto</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Nome do projeto"
+              className="w-full"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleRenameProject();
+                }
+              }}
+            />
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setRenamingProject(null)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleRenameProject} disabled={!newName.trim()}>
+                Renomear
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

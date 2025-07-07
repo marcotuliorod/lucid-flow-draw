@@ -1,7 +1,7 @@
 
 export interface CanvasElement {
   id: string;
-  type: 'rectangle' | 'circle' | 'diamond' | 'arrow' | 'text' | 'image';
+  type: 'rectangle' | 'circle' | 'diamond' | 'arrow' | 'text' | 'image' | 'start' | 'end' | 'task' | 'decision' | 'subprocess' | 'document' | 'annotation';
   x: number;
   y: number;
   width: number;
@@ -11,4 +11,6 @@ export interface CanvasElement {
   startElementId?: string;
   endElementId?: string;
   imageUrl?: string;
+  grouped?: boolean;
+  groupId?: string;
 }

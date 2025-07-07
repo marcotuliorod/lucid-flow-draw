@@ -25,21 +25,89 @@ const CanvasElementComponent = ({
   onTextSubmit, 
   onKeyPress 
 }: CanvasElementProps) => {
+  
+  const getElementStyle = () => {
+    const baseStyle = {
+      left: element.x,
+      top: element.y,
+      width: element.width,
+      height: element.height,
+    };
+
+    switch (element.type) {
+      case 'start':
+        return {
+          ...baseStyle,
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #10b981, #059669)',
+        };
+      case 'end':
+        return {
+          ...baseStyle,
+          borderRadius: '12px',
+          background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+        };
+      case 'task':
+        return {
+          ...baseStyle,
+          borderRadius: '12px',
+          background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+        };
+      case 'decision':
+        return {
+          ...baseStyle,
+          borderRadius: '0',
+          transform: 'rotate(45deg)',
+          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+        };
+      case 'subprocess':
+        return {
+          ...baseStyle,
+          borderRadius: '12px',
+          background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+          border: '3px double currentColor',
+        };
+      case 'document':
+        return {
+          ...baseStyle,
+          borderRadius: '12px 12px 0 12px',
+          background: 'linear-gradient(135deg, #06b6d4, #0891b2)',
+        };
+      case 'annotation':
+        return {
+          ...baseStyle,
+          borderRadius: '20px',
+          background: 'linear-gradient(135deg, #ec4899, #db2777)',
+        };
+      case 'circle':
+        return {
+          ...baseStyle,
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #6366f1, #4f46e5)',
+        };
+      case 'rectangle':
+        return {
+          ...baseStyle,
+          borderRadius: '12px',
+          background: 'linear-gradient(135deg, #64748b, #475569)',
+        };
+      default:
+        return {
+          ...baseStyle,
+          borderRadius: '12px',
+          background: 'linear-gradient(135deg, #6b7280, #4b5563)',
+        };
+    }
+  };
+
   return (
     <div
-      className={`absolute border cursor-move hover:bg-blue-100/80 dark:hover:bg-blue-800/30 transition-all duration-200 flex items-center justify-center text-sm font-light ${
+      className={`absolute border cursor-move hover:shadow-lg transition-all duration-200 flex items-center justify-center text-sm font-medium text-white ${
         isSelected 
-          ? 'border-orange-500 bg-orange-50/80 dark:bg-orange-900/20 text-orange-900 dark:text-orange-100'
-          : 'border-blue-500 dark:border-blue-400 bg-blue-50/80 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100'
+          ? 'border-orange-500 ring-2 ring-orange-500/50 shadow-lg'
+          : 'border-white/20 shadow-md'
       }`}
-      style={{
-        left: element.x,
-        top: element.y,
-        width: element.width,
-        height: element.height,
-        borderRadius: element.type === 'circle' ? '50%' : element.type === 'diamond' ? '0' : '12px',
-        transform: element.type === 'diamond' ? 'rotate(45deg)' : 'none'
-      }}
+      style={getElementStyle()}
       onClick={() => onElementClick(element.id)}
       onDoubleClick={() => onElementDoubleClick(element.id)}
     >
@@ -77,7 +145,7 @@ const CanvasElementComponent = ({
           );
         })()
       ) : (
-        <span className={element.type === 'diamond' ? 'transform -rotate-45' : ''}>
+        <span className={element.type === 'diamond' || element.type === 'decision' ? 'transform -rotate-45' : ''}>
           {element.text || element.type}
         </span>
       )}
