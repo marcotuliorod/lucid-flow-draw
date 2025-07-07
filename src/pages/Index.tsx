@@ -29,8 +29,12 @@ const Index = () => {
               <Button variant="ghost" className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white font-light">
                 Sobre
               </Button>
-              <Button variant="ghost" className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white font-light">
-                Recursos
+              <Button 
+                asChild
+                variant="ghost" 
+                className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white font-light"
+              >
+                <Link to="/recursos">Recursos</Link>
               </Button>
               <Button 
                 asChild

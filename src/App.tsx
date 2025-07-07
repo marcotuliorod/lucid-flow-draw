@@ -8,6 +8,7 @@ import { useAuth } from "./hooks/useAuth";
 import { useSecurity } from "./hooks/useSecurity";
 import { useEffect } from "react";
 import Index from "./pages/Index";
+import Resources from "./pages/Resources";
 import Dashboard from "./components/Dashboard";
 import ProcessEditor from "./components/ProcessEditor";
 import LoginForm from "./components/auth/LoginForm";
@@ -80,6 +81,14 @@ const AppContent = () => {
           element={
             <PublicRoute>
               <LoginForm />
+            </PublicRoute>
+          } 
+        />
+        <Route 
+          path="/recursos" 
+          element={
+            <PublicRoute>
+              <Resources />
             </PublicRoute>
           } 
         />
