@@ -60,7 +60,6 @@ export const useMouseHandlers = ({
   };
 
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
-    console.log('MouseDown called with tool:', selectedTool);
     const pos = getCanvasPosition(e);
     if (!pos) return;
 
@@ -95,7 +94,6 @@ export const useMouseHandlers = ({
   };
 
   const handleCanvasMouseUp = (e: React.MouseEvent) => {
-    console.log('MouseUp called, isDrawing:', isDrawing, 'tool:', selectedTool);
     if (!isDrawing || selectedTool === 'select') return;
 
     const pos = getCanvasPosition(e);
@@ -114,9 +112,7 @@ export const useMouseHandlers = ({
       const height = Math.abs(pos.y - startPos.y);
 
       if (width > 10 || height > 10) {
-        console.log('Creating element with width:', width, 'height:', height);
         const toolType = validateToolType(selectedTool);
-        console.log('Validated tool type:', toolType);
         const newElement = createShapeElement(
           toolType,
           Math.min(startPos.x, pos.x),
@@ -125,9 +121,7 @@ export const useMouseHandlers = ({
           height,
           getDefaultText
         );
-        console.log('Created element:', newElement);
         setElements(prev => [...prev, newElement]);
-        console.log('Element added to state');
       }
     }
 

@@ -14,6 +14,7 @@ export const useCanvasState = (initialElements: CanvasElement[] = []) => {
   const [nearElement, setNearElement] = useState<string | null>(null);
 
   const loadElements = (newElements: CanvasElement[]) => {
+    console.log('loadElements called with:', newElements);
     setElements(newElements);
   };
 

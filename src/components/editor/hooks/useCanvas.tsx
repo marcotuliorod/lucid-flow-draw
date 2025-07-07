@@ -82,8 +82,14 @@ export const useCanvas = (initialElements: CanvasElement[] = []) => {
   });
 
   const addImageElement = (imageUrl: string, x: number, y: number) => {
+    console.log('addImageElement called:', { imageUrl, x, y });
     const newElement = createImageElement(imageUrl, x, y);
-    setElements(prev => [...prev, newElement]);
+    console.log('Created image element:', newElement);
+    setElements(prev => {
+      const updated = [...prev, newElement];
+      console.log('Updated elements:', updated);
+      return updated;
+    });
     setSelectedTool('select');
   };
 

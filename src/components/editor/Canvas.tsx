@@ -168,6 +168,11 @@ const Canvas = ({
           transform: `scale(${zoom / 100})`
         }}
       >
+        {/* Debug info */}
+        <div className="absolute top-4 left-4 text-xs text-gray-500 bg-white/80 p-2 rounded">
+          Elements: {elements.length} | Tool: {selectedTool} | Drawing: {isDrawing ? 'yes' : 'no'}
+        </div>
+        
         {/* Elementos existentes */}
         {elements.map((element) => {
           if (element.type === 'arrow') {
