@@ -1,33 +1,50 @@
 
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import EditorHeader from "./editor/EditorHeader";
 import EditorToolbar from "./editor/EditorToolbar";
 import Canvas from "./editor/Canvas";
 import MiniMap from "./editor/MiniMap";
 import LayersPanel from "./editor/LayersPanel";
 import { useCanvas } from "./editor/hooks/useCanvas";
-import { useAuth } from "@/hooks/useAuth";
-import { useProjects } from "@/hooks/useProjects";
+import { useProjectEditor } from "./editor/hooks/useProjectEditor";
+import { useEditorActions } from "./editor/hooks/useEditorActions";
+import { useImageUpload } from "./editor/hooks/useImageUpload";
 
 const ProcessEditor = () => {
   console.log('ProcessEditor: Component initialized');
-  const navigate = useNavigate();
-  const { id } = useParams();
-  console.log('ProcessEditor: Route params - id:', id);
-  const { user } = useAuth();
-  console.log('ProcessEditor: User:', user?.id);
-  const { saveProject, getProject } = useProjects(user?.id);
   
-  const [projectName, setProjectName] = useState("Novo Processo");
-  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [zoom, setZoom] = useState(100);
-  const [viewportPosition, setViewportPosition] = useState({ x: 0, y: 0 });
-  const [showGrid, setShowGrid] = useState(true);
-  const [history, setHistory] = useState<any[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
+  const {
+    projectName,
+    setProjectName,
+    currentProjectId,
+    loading,
+    projectElements,
+    handleSave,
+    handleExportPDF,
+    handleBackToDashboard,
+    loadProject
+  } = useProjectEditor();
+
+  const {
+    zoom,
+    viewportPosition,
+    setViewportPosition,
+    showGrid,
+    handleUndo,
+    handleRedo,
+    handleZoomIn,
+    handleZoomOut,
+    handleAlignLeft,
+    handleAlignCenter,
+    handleAlignRight,
+    handleGroup,
+    handleUngroup,
+    handleToggleGrid,
+    canUndo,
+    canRedo
+  } = useEditorActions();
+
+  const { handleImageUpload } = useImageUpload();
 
   const {
     canvasRef,
@@ -55,181 +72,33 @@ const ProcessEditor = () => {
     addImageElement
   } = useCanvas();
 
-  // Load project if editing existing one
+  // Load project elements into canvas when they become available
   useEffect(() => {
-    console.log('ProcessEditor: useEffect triggered - id:', id, 'user:', user?.id);
-    if (id && id !== 'new' && user) {
-      console.log('ProcessEditor: Calling loadProject');
-      loadProject(id);
+    if (projectElements.length > 0) {
+      console.log('ProcessEditor: Loading project elements into canvas:', projectElements);
+      loadElements(projectElements);
     }
-  }, [id, user]);
-
-  const loadProject = async (projectId: string) => {
-    console.log('ProcessEditor: Loading project with ID:', projectId);
-    setLoading(true);
-    try {
-      console.log('ProcessEditor: Calling getProject...');
-      const { data, error } = await getProject(projectId);
-      console.log('ProcessEditor: getProject returned - data:', data, 'error:', error);
-      
-      if (error) {
-        console.error('ProcessEditor: Error loading project:', error);
-        toast.error("Erro ao carregar projeto");
-        setLoading(false);
-        navigate('/dashboard');
-        return;
-      }
-
-      if (data) {
-        console.log('ProcessEditor: Project data found, setting state...');
-        console.log('ProcessEditor: Setting project data - Name:', data.name, 'Elements:', data.elements);
-        setProjectName(data.name);
-        setCurrentProjectId(data.id);
-        console.log('ProcessEditor: About to call loadElements with:', data.elements);
-        loadElements(data.elements || []);
-        console.log('ProcessEditor: loadElements called, setting loading to false');
-        setLoading(false);
-        toast.success("Projeto carregado com sucesso!");
-      } else {
-        console.warn('ProcessEditor: No data received from getProject');
-        toast.error("Projeto não encontrado");
-        setLoading(false);
-        navigate('/dashboard');
-      }
-    } catch (err) {
-      console.error('ProcessEditor: Unexpected error loading project:', err);
-      toast.error("Erro inesperado ao carregar projeto");
-      setLoading(false);
-      navigate('/dashboard');
-    }
-  };
-
-  const handleSave = async () => {
-    if (!user) {
-      toast.error("Você precisa estar logado para salvar");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { data, error } = await saveProject(projectName, elements, currentProjectId || undefined);
-      
-      if (error) {
-        console.error('Error saving project:', error);
-        toast.error("Erro ao salvar projeto");
-      } else {
-        toast.success("Projeto salvo com sucesso!");
-        if (data && !currentProjectId) {
-          setCurrentProjectId(data.id);
-          navigate(`/editor/${data.id}`, { replace: true });
-        }
-      }
-    } catch (err) {
-      console.error('Unexpected error saving project:', err);
-      toast.error("Erro inesperado ao salvar projeto");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleExportPDF = () => {
-    console.log('Exportando PDF...');
-    toast.info("Funcionalidade de exportação em desenvolvimento");
-  };
-
-  const handleBackToDashboard = () => {
-    navigate('/dashboard');
-  };
-
-  const handleImageUpload = async (file: File) => {
-    const { validateImageFile, uploadImageToStorage } = await import('@/lib/fileValidation');
-    const { supabase } = await import('@/integrations/supabase/client');
-
-    // Validate file first
-    const validation = validateImageFile(file);
-    if (!validation.valid) {
-      toast.error(validation.error || 'Arquivo inválido');
-      return;
-    }
-
-    // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error('Usuário não autenticado');
-      return;
-    }
-
-    try {
-      // Upload to secure storage
-      const uploadResult = await uploadImageToStorage(file, user.id, supabase);
-      
-      if (uploadResult.success && uploadResult.url) {
-        addImageElement(uploadResult.url, 100, 100);
-        toast.success('Imagem adicionada com sucesso');
-      } else {
-        toast.error(uploadResult.error || 'Erro no upload da imagem');
-      }
-    } catch (error) {
-      console.error('Image upload error:', error);
-      toast.error('Erro inesperado no upload da imagem');
-    }
-  };
-
-  // New advanced functionality handlers
-  const handleUndo = () => {
-    if (historyIndex > 0) {
-      setHistoryIndex(historyIndex - 1);
-      loadElements(history[historyIndex - 1]);
-    }
-  };
-
-  const handleRedo = () => {
-    if (historyIndex < history.length - 1) {
-      setHistoryIndex(historyIndex + 1);
-      loadElements(history[historyIndex + 1]);
-    }
-  };
-
-  const handleZoomIn = () => {
-    setZoom(Math.min(zoom + 25, 300));
-  };
-
-  const handleZoomOut = () => {
-    setZoom(Math.max(zoom - 25, 25));
-  };
-
-  const handleAlignLeft = () => {
-    // Placeholder for alignment functionality
-    toast.info("Funcionalidade de alinhamento em desenvolvimento");
-  };
-
-  const handleAlignCenter = () => {
-    // Placeholder for alignment functionality
-    toast.info("Funcionalidade de alinhamento em desenvolvimento");
-  };
-
-  const handleAlignRight = () => {
-    // Placeholder for alignment functionality
-    toast.info("Funcionalidade de alinhamento em desenvolvimento");
-  };
-
-  const handleGroup = () => {
-    // Placeholder for grouping functionality
-    toast.info("Funcionalidade de agrupamento em desenvolvimento");
-  };
-
-  const handleUngroup = () => {
-    // Placeholder for ungrouping functionality
-    toast.info("Funcionalidade de desagrupamento em desenvolvimento");
-  };
-
-  const handleToggleGrid = () => {
-    setShowGrid(!showGrid);
-  };
+  }, [projectElements, loadElements]);
 
   const handleElementDelete = (elementId: string) => {
     const newElements = elements.filter(el => el.id !== elementId);
     loadElements(newElements);
+  };
+
+  const handleSaveProject = () => {
+    handleSave(elements);
+  };
+
+  const handleImageUploadWrapper = (file: File) => {
+    handleImageUpload(file, addImageElement);
+  };
+
+  const handleUndoWrapper = () => {
+    handleUndo(loadElements);
+  };
+
+  const handleRedoWrapper = () => {
+    handleRedo(loadElements);
   };
 
   console.log('ProcessEditor: Rendering - loading:', loading, 'elements.length:', elements.length);
@@ -251,12 +120,12 @@ const ProcessEditor = () => {
         projectName={projectName}
         setProjectName={setProjectName}
         elementsCount={elements.length}
-        onSave={handleSave}
+        onSave={handleSaveProject}
         onExportPDF={handleExportPDF}
         onLogout={handleBackToDashboard}
         saving={loading}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
+        onUndo={handleUndoWrapper}
+        onRedo={handleRedoWrapper}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         onAlignLeft={handleAlignLeft}
@@ -266,8 +135,8 @@ const ProcessEditor = () => {
         onUngroup={handleUngroup}
         onToggleGrid={handleToggleGrid}
         showGrid={showGrid}
-        canUndo={historyIndex > 0}
-        canRedo={historyIndex < history.length - 1}
+        canUndo={canUndo}
+        canRedo={canRedo}
         zoom={zoom}
       />
 
@@ -275,7 +144,7 @@ const ProcessEditor = () => {
         <EditorToolbar
           selectedTool={selectedTool}
           onToolSelect={setSelectedTool}
-          onImageUpload={handleImageUpload}
+          onImageUpload={handleImageUploadWrapper}
         />
 
         <div className="relative flex-1">
