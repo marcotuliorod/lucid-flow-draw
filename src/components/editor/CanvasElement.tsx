@@ -25,6 +25,7 @@ const CanvasElementComponent = ({
   onTextSubmit, 
   onKeyPress 
 }: CanvasElementProps) => {
+  console.log('CanvasElement: Rendering element:', element.type, element.id, 'at position:', element.x, element.y);
   
   const getElementStyle = () => {
     const baseStyle = {
