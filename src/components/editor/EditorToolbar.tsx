@@ -127,6 +127,9 @@ const EditorToolbar = ({ selectedTool, onToolSelect, onImageUpload }: EditorTool
         accept="image/*"
         onChange={handleFileChange}
         className="hidden"
+        id="file-upload"
+        aria-label="Fazer upload de imagem"
+        title="Selecionar arquivo de imagem"
       />
     </aside>
   );
