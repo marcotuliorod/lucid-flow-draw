@@ -90,8 +90,9 @@ const CanvasElementComponent = ({
         return {
           ...baseStyle,
           borderRadius: '12px',
-          background: element.color || '#3B82F6',
-          border: '2px solid rgba(255,255,255,0.2)'
+          background: '#FF0000', // Vermelho temporário para debug
+          border: '3px solid #000000', // Borda preta para visibilidade
+          zIndex: 10
         };
       default:
         return {
