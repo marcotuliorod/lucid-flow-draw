@@ -131,7 +131,6 @@ export const useCanvas = (initialElements: CanvasElement[] = []) => {
 
     setIsDrawing(false);
     setNearElement(null);
-    setSelectedTool('select');
   };
 
   const handleElementDoubleClick = (elementId: string) => {
