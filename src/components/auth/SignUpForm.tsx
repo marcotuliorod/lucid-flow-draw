@@ -149,7 +149,7 @@ const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
       <Button
         type="submit"
         disabled={loading}
-        className="w-full bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 hover:from-emerald-700 hover:via-teal-600 hover:to-cyan-600 text-white font-medium rounded-lg"
+        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg"
       >
         {loading ? 'Cadastrando...' : 'Criar Conta'}
       </Button>
