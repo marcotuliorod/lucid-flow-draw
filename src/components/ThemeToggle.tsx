@@ -12,6 +12,8 @@ const ThemeToggle = () => {
       size="sm"
       onClick={toggleTheme}
       className="h-9 w-9 px-0"
+      title="Alternar tema"
+      aria-label="Alternar tema"
     >
       {theme === 'light' ? (
         <Moon className="h-4 w-4" />
