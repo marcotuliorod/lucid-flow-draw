@@ -53,12 +53,29 @@ const CanvasElementComponent = ({
           autoFocus
         />
       ) : element.type === 'image' && element.imageUrl ? (
-        <img 
-          src={element.imageUrl} 
-          alt="Canvas element" 
-          className="w-full h-full object-cover rounded-lg"
-          draggable={false}
-        />
+        (() => {
+          // Validate image URL before rendering
+          try {
+            const url = new URL(element.imageUrl);
+            const isValid = url.protocol === 'https:' || element.imageUrl.startsWith('data:image/');
+            if (!isValid) return <span>Imagem inválida</span>;
+          } catch {
+            return <span>URL inválida</span>;
+          }
+          
+          return (
+            <img 
+              src={element.imageUrl} 
+              alt="Canvas element" 
+              className="w-full h-full object-cover rounded-lg"
+              draggable={false}
+              onError={(e) => {
+                // Replace with placeholder on error
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          );
+        })()
       ) : (
         <span className={element.type === 'diamond' ? 'transform -rotate-45' : ''}>
           {element.text || element.type}

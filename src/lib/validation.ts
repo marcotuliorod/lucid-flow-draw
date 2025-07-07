@@ -56,6 +56,24 @@ export const sanitizeText = (text: string, maxLength: number = 1000): string => 
   return text.trim().replace(/[<>"/\\&'`]/g, '').substring(0, maxLength)
 }
 
+// Enhanced HTML sanitization for user content
+export const sanitizeHtml = (html: string): string => {
+  const div = document.createElement('div')
+  div.textContent = html
+  return div.innerHTML
+}
+
+// URL validation for image sources
+export const isValidImageUrl = (url: string): boolean => {
+  try {
+    const urlObj = new URL(url)
+    // Only allow HTTPS URLs and data URLs for images
+    return urlObj.protocol === 'https:' || url.startsWith('data:image/')
+  } catch {
+    return false
+  }
+}
+
 // Security utilities with enhanced validation
 export const isValidProjectId = (id: string): boolean => {
   return /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(id)

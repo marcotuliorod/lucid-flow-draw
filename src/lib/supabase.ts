@@ -109,35 +109,6 @@ export type Database = {
           user_id?: string
         }
       }
-      profiles: {
-        Row: {
-          id: string
-          user_id: string
-          email: string
-          full_name?: string
-          avatar_url?: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          email: string
-          full_name?: string
-          avatar_url?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          email?: string
-          full_name?: string
-          avatar_url?: string
-          created_at?: string
-          updated_at?: string
-        }
-      }
     }
   }
 }
