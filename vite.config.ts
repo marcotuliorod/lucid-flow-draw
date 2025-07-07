@@ -8,6 +8,9 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    headers: {
+      'X-Content-Type-Options': 'nosniff'
+    }
   },
   plugins: [
     react(),
