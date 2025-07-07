@@ -170,16 +170,15 @@ const Canvas = ({
           transformOrigin: 'top left'
         }}
       >
-        {/* Debug info - temporarily hidden to check interaction */}
-        {false && (
-          <div className="absolute top-4 left-4 text-xs text-red-600 bg-yellow-200 p-2 rounded z-50 border-2 border-red-500">
-            <div>Elements: {elements.length} | Tool: {selectedTool} | Drawing: {isDrawing ? 'yes' : 'no'}</div>
-            <div>Zoom: {zoom}%</div>
-            {elements.length > 0 && (
-              <div>First element: {elements[0].type} at ({elements[0].x}, {elements[0].y})</div>
-            )}
-          </div>
-        )}
+        {/* Debug info - NOW VISIBLE */}
+        <div className="absolute top-4 left-4 text-xs text-white bg-red-600 p-4 rounded z-50 border-4 border-yellow-400">
+          <div>Elements: {elements.length} | Tool: {selectedTool} | Drawing: {isDrawing ? 'yes' : 'no'}</div>
+          <div>Zoom: {zoom}%</div>
+          {elements.length > 0 && (
+            <div>First element: {elements[0].type} at ({elements[0].x}, {elements[0].y})</div>
+          )}
+          <div className="text-yellow-300 font-bold">DEBUG BOX - YOU SHOULD SEE THIS!</div>
+        </div>
         
         {/* Elementos existentes */}
         {elements.map((element) => {
