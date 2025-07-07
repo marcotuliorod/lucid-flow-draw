@@ -21,11 +21,13 @@ export const useProjects = (userId: string | undefined) => {
 
     try {
       setLoading(true)
+      console.log('Fetching projects for user', userId)
       const { data, error } = await projectService.fetchProjects(userId)
       
       if (error) {
-        console.error(error)
+        console.error('Error fetching projects:', error)
       } else {
+        console.log('Projects fetched successfully:', data)
         setProjects(data || [])
       }
     } finally {

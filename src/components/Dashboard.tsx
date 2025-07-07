@@ -43,6 +43,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { projects, loading, deleteProject, saveProject } = useProjects(user?.id);
+  console.log('Dashboard - User ID:', user?.id, 'Projects:', projects, 'Loading:', loading);
   const [searchTerm, setSearchTerm] = useState("");
   const [renamingProject, setRenamingProject] = useState<{ id: string; name: string } | null>(null);
   const [newName, setNewName] = useState("");
