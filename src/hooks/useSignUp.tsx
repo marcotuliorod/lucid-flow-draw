@@ -1,6 +1,7 @@
 
 import { useState } from 'react'
 import { useAuth } from './useAuth'
+import { supabase } from '@/integrations/supabase/client'
 import { useSecurity } from './useSecurity'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
