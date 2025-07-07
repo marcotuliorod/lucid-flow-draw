@@ -72,13 +72,42 @@ const ProcessEditor = () => {
     addImageElement
   } = useCanvas();
 
-  // Load project elements into canvas when they become available
+  // Load project elements into canvas when they become available OR add test elements
   useEffect(() => {
+    console.log('ProcessEditor: Loading elements effect - projectElements:', projectElements, 'currentProjectId:', currentProjectId);
+    
     if (projectElements.length > 0) {
       console.log('ProcessEditor: Loading project elements into canvas:', projectElements);
       loadElements(projectElements);
+    } else if (currentProjectId === null && !loading) {
+      // Se for um novo projeto, adicionar elementos de teste para debug
+      console.log('ProcessEditor: Adding test elements for new project');
+      const testElements = [
+        {
+          id: 'test-1',
+          type: 'rectangle' as const,
+          x: 100,
+          y: 100,
+          width: 150,
+          height: 80,
+          text: 'Teste 1',
+          color: '#3b82f6'
+        },
+        {
+          id: 'test-2', 
+          type: 'rectangle' as const,
+          x: 300,
+          y: 200,
+          width: 150,
+          height: 80,
+          text: 'Teste 2',
+          color: '#ef4444'
+        }
+      ];
+      console.log('ProcessEditor: Loading test elements:', testElements);
+      loadElements(testElements);
     }
-  }, [projectElements, loadElements]);
+  }, [projectElements, loadElements, currentProjectId, loading]);
 
   const handleElementDelete = (elementId: string) => {
     const newElements = elements.filter(el => el.id !== elementId);

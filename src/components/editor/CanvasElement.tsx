@@ -90,9 +90,9 @@ const CanvasElementComponent = ({
         return {
           ...baseStyle,
           borderRadius: '12px',
-          background: '#FF0000', // Vermelho temporário para debug
-          border: '3px solid #000000', // Borda preta para visibilidade
-          zIndex: 10
+          background: 'linear-gradient(135deg, #3b82f6, #2563eb)', // Azul em vez de vermelho
+          border: '2px solid #1d4ed8',
+          zIndex: 1
         };
       default:
         return {
