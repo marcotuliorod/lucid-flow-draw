@@ -56,6 +56,7 @@ const Canvas = ({
   showGrid = true,
   zoom = 100
 }: CanvasProps) => {
+  console.log('Canvas: Rendering with elements:', elements, 'Elements count:', elements.length);
   // Renderizar linha da seta durante o desenho
   const renderArrowPreview = () => {
     if (!isDrawing || selectedTool !== 'arrow') return null;
