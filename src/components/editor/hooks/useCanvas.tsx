@@ -81,10 +81,9 @@ export const useCanvas = (initialElements: CanvasElement[] = []) => {
     getDefaultText
   });
 
-  // Function to add image element
   const addImageElement = (imageUrl: string, x: number, y: number) => {
     const newElement = createImageElement(imageUrl, x, y);
-    setElements([...elements, newElement]);
+    setElements(prev => [...prev, newElement]);
     setSelectedTool('select');
   };
 

@@ -2,7 +2,7 @@ import { CanvasElement } from "../types";
 
 interface UseTextEditingProps {
   elements: CanvasElement[];
-  setElements: (elements: CanvasElement[]) => void;
+  setElements: (updater: (prev: CanvasElement[]) => CanvasElement[]) => void;
   editingText: string | null;
   setEditingText: (id: string | null) => void;
   tempText: string;
@@ -27,7 +27,7 @@ export const useTextEditing = ({
 
   const handleTextSubmit = () => {
     if (editingText) {
-      setElements(elements.map(el => 
+      setElements(prev => prev.map(el => 
         el.id === editingText ? { ...el, text: tempText } : el
       ));
       setEditingText(null);
