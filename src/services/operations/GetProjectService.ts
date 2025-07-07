@@ -10,7 +10,7 @@ export class GetProjectService extends BaseProjectService {
     }
 
     try {
-      console.log('Getting project with validation passed')
+      console.log('GetProjectService: Getting project with validation passed for userId:', userId, 'projectId:', projectId)
       
       const query = this.supabase
         .from('projects')
@@ -19,13 +19,17 @@ export class GetProjectService extends BaseProjectService {
         .eq('user_id', userId)
         .single()
 
+      console.log('GetProjectService: About to execute query')
       const { data, error } = await query
+      console.log('GetProjectService: Query result - data:', data, 'error:', error)
 
       if (error) {
+        console.error('GetProjectService: Supabase error:', error)
         return this.handleError(error, userId, 'get_project', 'Erro ao carregar projeto')
       }
 
        if (!data) {
+         console.log('GetProjectService: No data returned from query')
          return { error: 'Projeto não encontrado' }
        }
 
@@ -35,9 +39,10 @@ export class GetProjectService extends BaseProjectService {
          elements: Array.isArray(data.elements) ? data.elements as any[] : []
        }
 
-       console.log('Project fetched successfully')
+       console.log('GetProjectService: Project fetched successfully:', project)
        return { data: project }
     } catch (err) {
+      console.error('GetProjectService: Unexpected error:', err)
       return this.handleUnexpectedError(err, userId, 'get_project', 'Erro inesperado ao carregar projeto')
     }
   }

@@ -60,9 +60,12 @@ const ProcessEditor = () => {
   }, [id, user]);
 
   const loadProject = async (projectId: string) => {
+    console.log('ProcessEditor: Loading project with ID:', projectId);
     setLoading(true);
     try {
       const { data, error } = await getProject(projectId);
+      console.log('ProcessEditor: Project data received:', data);
+      console.log('ProcessEditor: Project error:', error);
       
       if (error) {
         console.error('Error loading project:', error);
@@ -72,10 +75,15 @@ const ProcessEditor = () => {
       }
 
       if (data) {
+        console.log('ProcessEditor: Setting project data - Name:', data.name, 'Elements:', data.elements);
         setProjectName(data.name);
         setCurrentProjectId(data.id);
         loadElements(data.elements || []);
         toast.success("Projeto carregado com sucesso!");
+      } else {
+        console.warn('ProcessEditor: No data received from getProject');
+        toast.error("Projeto não encontrado");
+        navigate('/dashboard');
       }
     } catch (err) {
       console.error('Unexpected error loading project:', err);
