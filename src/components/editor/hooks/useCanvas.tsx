@@ -1,215 +1,90 @@
-import { useState, useRef } from "react";
 import { CanvasElement } from "../types";
+import { useCanvasState } from "./useCanvasState";
+import { useElementUtils } from "./useElementUtils";
+import { useElementCreation } from "./useElementCreation";
+import { useTextEditing } from "./useTextEditing";
+import { useMouseHandlers } from "./useMouseHandlers";
 
 export const useCanvas = (initialElements: CanvasElement[] = []) => {
-  const canvasRef = useRef<HTMLDivElement>(null);
-  const [elements, setElements] = useState<CanvasElement[]>(initialElements);
-  const [selectedElement, setSelectedElement] = useState<string | null>(null);
-  const [selectedTool, setSelectedTool] = useState<string>("select");
-  const [editingText, setEditingText] = useState<string | null>(null);
-  const [tempText, setTempText] = useState("");
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
-  const [currentPos, setCurrentPos] = useState({ x: 0, y: 0 });
-  const [nearElement, setNearElement] = useState<string | null>(null);
+  const {
+    canvasRef,
+    elements,
+    setElements,
+    selectedElement,
+    setSelectedElement,
+    selectedTool,
+    setSelectedTool,
+    editingText,
+    setEditingText,
+    tempText,
+    setTempText,
+    isDrawing,
+    setIsDrawing,
+    startPos,
+    setStartPos,
+    currentPos,
+    setCurrentPos,
+    nearElement,
+    setNearElement,
+    loadElements
+  } = useCanvasState(initialElements);
 
-  // Função para obter texto padrão baseado no tipo
-  const getDefaultText = (type: CanvasElement['type']) => {
-    const textMap = {
-      start: 'Início',
-      end: 'Fim', 
-      task: 'Tarefa',
-      decision: 'Decisão',
-      subprocess: 'Subprocesso',
-      document: 'Documento',
-      annotation: 'Anotação',
-      rectangle: 'Retângulo',
-      circle: 'Círculo',
-      diamond: 'Losango',
-      text: 'Texto',
-      arrow: '',
-      image: ''
-    };
-    return textMap[type] || type;
-  };
+  const {
+    getDefaultText,
+    findNearElement,
+    getConnectionPoint,
+    findClickedElement
+  } = useElementUtils();
 
-  // Função para encontrar elemento próximo do cursor
-  const findNearElement = (x: number, y: number) => {
-    const threshold = 30;
-    return elements.find(element => {
-      if (element.type === 'arrow') return false;
-      
-      const centerX = element.x + element.width / 2;
-      const centerY = element.y + element.height / 2;
-      const distance = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2));
-      
-      return distance < threshold;
-    });
-  };
+  const {
+    createArrowElement,
+    createShapeElement,
+    createImageElement,
+    validateToolType
+  } = useElementCreation();
 
-  // Função para obter ponto de conexão de um elemento
-  const getConnectionPoint = (element: CanvasElement) => ({
-    x: element.x + element.width / 2,
-    y: element.y + element.height / 2
+  const {
+    handleElementDoubleClick,
+    handleTextSubmit,
+    handleKeyPress
+  } = useTextEditing({
+    elements,
+    setElements,
+    editingText,
+    setEditingText,
+    tempText,
+    setTempText
   });
 
-  const handleCanvasMouseDown = (e: React.MouseEvent) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    if (selectedTool === 'select') {
-      const clickedElement = elements.find(element => 
-        x >= element.x && x <= element.x + element.width &&
-        y >= element.y && y <= element.y + element.height
-      );
-      
-      if (clickedElement) {
-        setSelectedElement(clickedElement.id);
-      } else {
-        setSelectedElement(null);
-      }
-      return;
-    }
-    
-    setStartPos({ x, y });
-    setCurrentPos({ x, y });
-    setIsDrawing(true);
-
-    if (selectedTool === 'arrow') {
-      const nearEl = findNearElement(x, y);
-      setNearElement(nearEl?.id || null);
-    }
-  };
-
-  const handleCanvasMouseMove = (e: React.MouseEvent) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    if (isDrawing && selectedTool !== 'select') {
-      setCurrentPos({ x, y });
-
-      if (selectedTool === 'arrow') {
-        const nearEl = findNearElement(x, y);
-        setNearElement(nearEl?.id || null);
-      }
-    }
-  };
-
-  const handleCanvasMouseUp = (e: React.MouseEvent) => {
-    if (!isDrawing || selectedTool === 'select') return;
-
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-
-    const endX = e.clientX - rect.left;
-    const endY = e.clientY - rect.top;
-
-    if (selectedTool === 'arrow') {
-      const startElement = findNearElement(startPos.x, startPos.y);
-      const endElement = findNearElement(endX, endY);
-
-      if (startElement && endElement && startElement.id !== endElement.id) {
-        const newArrow: CanvasElement = {
-          id: crypto.randomUUID(),
-          type: 'arrow',
-          x: 0,
-          y: 0,
-          width: 0,
-          height: 0,
-          color: '#3B82F6',
-          startElementId: startElement.id,
-          endElementId: endElement.id
-        };
-
-        setElements(prev => [...prev, newArrow]);
-      }
-    } else {
-      const width = Math.abs(endX - startPos.x);
-      const height = Math.abs(endY - startPos.y);
-
-      if (width > 10 || height > 10) {
-        // Validate tool type
-        const validTypes: CanvasElement['type'][] = [
-          'rectangle', 'circle', 'diamond', 'text', 'start', 'end', 
-          'task', 'decision', 'subprocess', 'document', 'annotation'
-        ];
-        
-        const toolType = validTypes.includes(selectedTool as CanvasElement['type']) 
-          ? selectedTool as CanvasElement['type'] 
-          : 'rectangle';
-
-        const newElement: CanvasElement = {
-          id: crypto.randomUUID(),
-          type: toolType,
-          x: Math.min(startPos.x, endX),
-          y: Math.min(startPos.y, endY),
-          width: width || 100,
-          height: height || 60,
-          text: toolType === 'text' ? 'Texto' : getDefaultText(toolType),
-          color: '#3B82F6'
-        };
-
-        setElements(prev => [...prev, newElement]);
-      }
-    }
-
-    setIsDrawing(false);
-    setNearElement(null);
-  };
-
-  const handleElementDoubleClick = (elementId: string) => {
-    const element = elements.find(el => el.id === elementId);
-    if (element && element.type !== 'arrow') {
-      setEditingText(elementId);
-      setTempText(element.text || '');
-    }
-  };
-
-  const handleTextSubmit = () => {
-    if (editingText) {
-      setElements(elements.map(el => 
-        el.id === editingText ? { ...el, text: tempText } : el
-      ));
-      setEditingText(null);
-      setTempText('');
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleTextSubmit();
-    } else if (e.key === 'Escape') {
-      setEditingText(null);
-      setTempText('');
-    }
-  };
-
-  // New function to load elements
-  const loadElements = (newElements: CanvasElement[]) => {
-    setElements(newElements);
-  };
+  const {
+    handleCanvasMouseDown,
+    handleCanvasMouseMove,
+    handleCanvasMouseUp
+  } = useMouseHandlers({
+    canvasRef,
+    selectedTool,
+    elements,
+    setElements,
+    setSelectedElement,
+    isDrawing,
+    setIsDrawing,
+    startPos,
+    setStartPos,
+    currentPos,
+    setCurrentPos,
+    setNearElement,
+    findNearElement,
+    findClickedElement,
+    createArrowElement,
+    createShapeElement,
+    validateToolType,
+    getDefaultText
+  });
 
   // Function to add image element
   const addImageElement = (imageUrl: string, x: number, y: number) => {
-    const newElement: CanvasElement = {
-      id: crypto.randomUUID(),
-      type: 'image',
-      x,
-      y,
-      width: 150,
-      height: 100,
-      text: '',
-      color: '#3B82F6',
-      imageUrl
-    };
-    
-    setElements(prev => [...prev, newElement]);
+    const newElement = createImageElement(imageUrl, x, y);
+    setElements([...elements, newElement]);
     setSelectedTool('select');
   };
 
@@ -226,7 +101,7 @@ export const useCanvas = (initialElements: CanvasElement[] = []) => {
     startPos,
     currentPos,
     nearElement,
-    findNearElement,
+    findNearElement: (x: number, y: number) => findNearElement(x, y, elements),
     getConnectionPoint,
     handleCanvasMouseDown,
     handleCanvasMouseMove,
