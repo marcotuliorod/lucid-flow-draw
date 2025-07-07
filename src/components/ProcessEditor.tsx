@@ -41,7 +41,8 @@ const ProcessEditor = () => {
     handleTextSubmit,
     handleKeyPress,
     setSelectedElement,
-    loadElements
+    loadElements,
+    addImageElement
   } = useCanvas();
 
   // Load project if editing existing one
@@ -115,6 +116,15 @@ const ProcessEditor = () => {
     navigate('/dashboard');
   };
 
+  const handleImageUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageUrl = e.target?.result as string;
+      addImageElement(imageUrl, 100, 100); // Posição inicial da imagem
+    };
+    reader.readAsDataURL(file);
+  };
+
   if (loading && !elements.length) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
@@ -139,6 +149,7 @@ const ProcessEditor = () => {
         <EditorToolbar
           selectedTool={selectedTool}
           onToolSelect={setSelectedTool}
+          onImageUpload={handleImageUpload}
         />
 
         <Canvas

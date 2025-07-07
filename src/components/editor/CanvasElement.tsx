@@ -52,6 +52,13 @@ const CanvasElementComponent = ({
           className="w-full h-full text-center border-none bg-transparent text-sm p-0 focus-visible:ring-0"
           autoFocus
         />
+      ) : element.type === 'image' && element.imageUrl ? (
+        <img 
+          src={element.imageUrl} 
+          alt="Canvas element" 
+          className="w-full h-full object-cover rounded-lg"
+          draggable={false}
+        />
       ) : (
         <span className={element.type === 'diamond' ? 'transform -rotate-45' : ''}>
           {element.text || element.type}

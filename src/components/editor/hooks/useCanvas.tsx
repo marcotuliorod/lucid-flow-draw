@@ -96,7 +96,7 @@ export const useCanvas = (initialElements: CanvasElement[] = []) => {
 
       if (startElement && endElement && startElement.id !== endElement.id) {
         const newArrow: CanvasElement = {
-          id: Date.now().toString(),
+          id: crypto.randomUUID(),
           type: 'arrow',
           x: 0,
           y: 0,
@@ -115,7 +115,7 @@ export const useCanvas = (initialElements: CanvasElement[] = []) => {
 
       if (width > 10 || height > 10) {
         const newElement: CanvasElement = {
-          id: Date.now().toString(),
+          id: crypto.randomUUID(),
           type: selectedTool as any,
           x: Math.min(startPos.x, endX),
           y: Math.min(startPos.y, endY),
@@ -166,6 +166,24 @@ export const useCanvas = (initialElements: CanvasElement[] = []) => {
     setElements(newElements);
   };
 
+  // Function to add image element
+  const addImageElement = (imageUrl: string, x: number, y: number) => {
+    const newElement: CanvasElement = {
+      id: crypto.randomUUID(),
+      type: 'image',
+      x,
+      y,
+      width: 150,
+      height: 100,
+      text: '',
+      color: '#3B82F6',
+      imageUrl
+    };
+    
+    setElements(prev => [...prev, newElement]);
+    setSelectedTool('select');
+  };
+
   return {
     canvasRef,
     elements,
@@ -188,6 +206,7 @@ export const useCanvas = (initialElements: CanvasElement[] = []) => {
     handleTextSubmit,
     handleKeyPress,
     setSelectedElement,
-    loadElements
+    loadElements,
+    addImageElement
   };
 };

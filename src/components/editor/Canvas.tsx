@@ -118,7 +118,7 @@ const Canvas = ({
 
   // Renderizar elemento de preview durante o desenho (exceto seta)
   const renderPreviewElement = () => {
-    if (!isDrawing || selectedTool === 'select' || selectedTool === 'arrow') return null;
+    if (!isDrawing || selectedTool === 'select' || selectedTool === 'arrow' || selectedTool === 'image') return null;
 
     const width = Math.abs(currentPos.x - startPos.x);
     const height = Math.abs(currentPos.y - startPos.y);
