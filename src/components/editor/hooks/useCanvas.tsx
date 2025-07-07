@@ -13,6 +13,26 @@ export const useCanvas = (initialElements: CanvasElement[] = []) => {
   const [currentPos, setCurrentPos] = useState({ x: 0, y: 0 });
   const [nearElement, setNearElement] = useState<string | null>(null);
 
+  // Função para obter texto padrão baseado no tipo
+  const getDefaultText = (type: CanvasElement['type']) => {
+    const textMap = {
+      start: 'Início',
+      end: 'Fim', 
+      task: 'Tarefa',
+      decision: 'Decisão',
+      subprocess: 'Subprocesso',
+      document: 'Documento',
+      annotation: 'Anotação',
+      rectangle: 'Retângulo',
+      circle: 'Círculo',
+      diamond: 'Losango',
+      text: 'Texto',
+      arrow: '',
+      image: ''
+    };
+    return textMap[type] || type;
+  };
+
   // Função para encontrar elemento próximo do cursor
   const findNearElement = (x: number, y: number) => {
     const threshold = 30;
@@ -114,14 +134,24 @@ export const useCanvas = (initialElements: CanvasElement[] = []) => {
       const height = Math.abs(endY - startPos.y);
 
       if (width > 10 || height > 10) {
+        // Validate tool type
+        const validTypes: CanvasElement['type'][] = [
+          'rectangle', 'circle', 'diamond', 'text', 'start', 'end', 
+          'task', 'decision', 'subprocess', 'document', 'annotation'
+        ];
+        
+        const toolType = validTypes.includes(selectedTool as CanvasElement['type']) 
+          ? selectedTool as CanvasElement['type'] 
+          : 'rectangle';
+
         const newElement: CanvasElement = {
           id: crypto.randomUUID(),
-          type: selectedTool as any,
+          type: toolType,
           x: Math.min(startPos.x, endX),
           y: Math.min(startPos.y, endY),
           width: width || 100,
           height: height || 60,
-          text: selectedTool === 'text' ? 'Texto' : `${selectedTool}`,
+          text: toolType === 'text' ? 'Texto' : getDefaultText(toolType),
           color: '#3B82F6'
         };
 

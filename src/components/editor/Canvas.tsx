@@ -155,7 +155,10 @@ const Canvas = ({
     <main className="flex-1 relative overflow-hidden">
       <div 
         ref={canvasRef}
-        className="w-full h-full bg-white dark:bg-slate-800 relative cursor-crosshair"
+        className={`w-full h-full bg-white dark:bg-slate-800 relative ${
+          selectedTool === 'select' ? 'cursor-default' : 
+          selectedTool === 'arrow' ? 'cursor-crosshair' : 'cursor-copy'
+        }`}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
