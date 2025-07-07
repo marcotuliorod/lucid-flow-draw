@@ -68,6 +68,8 @@ const LayersPanel = ({
           size="sm"
           onClick={() => setIsCollapsed(false)}
           className="h-8 w-8 p-0"
+          title="Expandir painel de camadas"
+          aria-label="Expandir painel de camadas"
         >
           <Layers className="h-4 w-4" />
         </Button>
@@ -91,6 +93,8 @@ const LayersPanel = ({
             size="sm"
             onClick={() => setIsCollapsed(true)}
             className="h-6 w-6 p-0"
+            title="Colapsar painel de camadas"
+            aria-label="Colapsar painel de camadas"
           >
             <ChevronRight className="h-3 w-3" />
           </Button>
@@ -127,6 +131,8 @@ const LayersPanel = ({
                       onElementToggleVisibility?.(element.id);
                     }}
                     className="h-6 w-6 p-0 opacity-60 hover:opacity-100"
+                    title="Alternar visibilidade"
+                    aria-label="Alternar visibilidade do elemento"
                   >
                     <Eye className="h-3 w-3" />
                   </Button>
@@ -138,6 +144,8 @@ const LayersPanel = ({
                       onElementToggleLock?.(element.id);
                     }}
                     className="h-6 w-6 p-0 opacity-60 hover:opacity-100"
+                    title="Alternar bloqueio"
+                    aria-label="Alternar bloqueio do elemento"
                   >
                     <Unlock className="h-3 w-3" />
                   </Button>
@@ -149,6 +157,8 @@ const LayersPanel = ({
                       onElementDelete(element.id);
                     }}
                     className="h-6 w-6 p-0 opacity-60 hover:opacity-100 text-red-500 hover:text-red-600"
+                    title="Excluir elemento"
+                    aria-label="Excluir elemento"
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
