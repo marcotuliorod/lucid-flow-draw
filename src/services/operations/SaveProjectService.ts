@@ -1,6 +1,6 @@
 
 import { BaseProjectService } from '../base/BaseProjectService'
-import { isValidUserId, isValidProjectId, validateAndSanitizeInput } from '@/lib/validation'
+import { isValidUserId, isValidProjectId, validateAndSanitizeInput, projectSchema } from '@/lib/validation'
 import { ProjectOperationResult, Project } from '@/types/project'
 
 export class SaveProjectService extends BaseProjectService {
@@ -21,34 +21,47 @@ export class SaveProjectService extends BaseProjectService {
     try {
       console.log('Saving project with validation...')
       
-      const validation = validateAndSanitizeInput(name, elements)
+      const validation = validateAndSanitizeInput({ name, elements }, projectSchema)
       if (!validation.success) {
         return { error: validation.error }
       }
 
+      const validatedData = validation.data
       const projectData = {
         user_id: userId,
-        name: validation.data.name || 'Projeto sem nome',
-        elements: validation.data.elements || [],
+        name: validatedData.name || 'Projeto sem nome',
+        elements: validatedData.elements || [],
         updated_at: new Date().toISOString()
       }
 
-      let query = this.supabase.from('projects')
+      let result
 
       if (projectId) {
-        query = query.update(projectData).eq('id', projectId).eq('user_id', userId)
+        const { data, error } = await this.supabase
+          .from('projects')
+          .update(projectData)
+          .eq('id', projectId)
+          .eq('user_id', userId)
+          .select()
+          .single()
+        
+        result = { data, error }
       } else {
-        query = query.insert([projectData])
+        const { data, error } = await this.supabase
+          .from('projects')
+          .insert([projectData])
+          .select()
+          .single()
+        
+        result = { data, error }
       }
 
-      const { data, error } = await query.select().single()
-
-      if (error) {
-        return this.handleError(error, userId, 'save_project', 'Erro ao salvar projeto')
+      if (result.error) {
+        return this.handleError(result.error, userId, 'save_project', 'Erro ao salvar projeto')
       }
 
       console.log('Project saved successfully')
-      return { data, error: null }
+      return { data: result.data, error: null }
     } catch (err) {
       return this.handleUnexpectedError(err, userId, 'save_project', 'Erro inesperado ao salvar projeto')
     }
