@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
 import { useSecurity } from "./hooks/useSecurity";
+import { useEffect } from "react";
 import Index from "./pages/Index";
 import Dashboard from "./components/Dashboard";
 import ProcessEditor from "./components/ProcessEditor";
@@ -98,7 +99,21 @@ const AppContent = () => {
 };
 
 const App = () => {
-  console.log('App: Initializing application with security enhancements...')
+  useEffect(() => {
+    console.log('App: Initializing application with security enhancements...')
+    
+    // Import and initialize auth cleanup on app start
+    import('@/lib/authCleanup').then(({ cleanupAuthState }) => {
+      // Only cleanup if there are stale entries, not current session
+      const hasStaleEntries = Object.keys(localStorage).some(key => 
+        key.includes('sb-') && !key.includes('supabase.auth.token')
+      );
+      
+      if (hasStaleEntries) {
+        cleanupAuthState();
+      }
+    });
+  }, []);
   
   return (
     <QueryClientProvider client={queryClient}>

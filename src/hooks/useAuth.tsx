@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/integrations/supabase/client'
 import { createSecureError } from '@/lib/validation'
+import { cleanupAuthState } from '@/lib/authCleanup'
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null)
@@ -124,7 +125,11 @@ export const useAuth = () => {
       if (import.meta.env.DEV) {
         console.log('useAuth: Attempting signout')
       }
-      const { error } = await supabase.auth.signOut()
+      
+      // Clean up auth state first
+      cleanupAuthState()
+      
+      const { error } = await supabase.auth.signOut({ scope: 'global' })
       if (error) {
         if (import.meta.env.DEV) {
           console.error('useAuth: SignOut error:', error.message)
@@ -132,6 +137,10 @@ export const useAuth = () => {
       } else if (import.meta.env.DEV) {
         console.log('useAuth: SignOut successful')
       }
+      
+      // Force page reload for clean state
+      window.location.href = '/'
+      
       return { error }
     } catch (err) {
       if (import.meta.env.DEV) {
