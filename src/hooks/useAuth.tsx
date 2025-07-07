@@ -62,9 +62,15 @@ export const useAuth = () => {
       if (import.meta.env.DEV) {
         console.log('useAuth: Attempting signup')
       }
+      
+      const redirectUrl = `${window.location.origin}/dashboard`
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
       })
       
       if (error) {

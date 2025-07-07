@@ -60,7 +60,11 @@ const SignUpForm = ({ onSuccess }: SignUpFormProps) => {
     const result = await handleSignUp(email, password)
     
     if (result.success) {
-      setSuccess('Cadastro realizado com sucesso!')
+      if (result.data?.user && !result.data.session) {
+        setSuccess('Cadastro realizado! Verifique seu email para confirmar a conta antes de fazer login.')
+      } else {
+        setSuccess('Cadastro realizado com sucesso!')
+      }
       // Limpar formulário
       setEmail('')
       setPassword('')

@@ -74,6 +74,9 @@ const LoginForm = () => {
           <h2 className="text-xl font-light text-slate-700 dark:text-slate-300">
             Entre ou crie sua conta
           </h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
+            Após o cadastro, verifique seu email para confirmar a conta
+          </p>
         </div>
 
         {/* Social Login Button - Only Google */}

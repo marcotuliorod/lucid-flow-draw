@@ -52,10 +52,10 @@ export const useSignIn = () => {
         // Secure error handling
         if (error.message?.includes('Invalid login credentials') || 
             error.message?.includes('Invalid email or password')) {
-          toast.error('Email ou senha incorretos')
+          toast.error('Email ou senha incorretos. Se você acabou de se cadastrar, verifique seu email primeiro.')
           return { success: false, error: 'Credenciais inválidas' }
         } else if (error.message?.includes('Email not confirmed')) {
-          toast.error('Confirme seu email antes de fazer login')
+          toast.error('Confirme seu email antes de fazer login. Verifique sua caixa de entrada.')
           return { success: false, error: 'Email não confirmado' }
         } else if (error.message?.includes('not configured')) {
           toast.error('Sistema temporariamente indisponível. Tente novamente mais tarde.')
