@@ -115,10 +115,8 @@ const CanvasElementComponent = ({
       }`}
       style={{
         ...elementStyle,
-        // FORÇAR VISIBILIDADE PARA DEBUG
-        backgroundColor: '#FF0000 !important',
-        border: '4px solid #FFFF00',
-        zIndex: 30
+        position: 'absolute',
+        zIndex: 10
       }}
       onClick={() => onElementClick(element.id)}
       onDoubleClick={() => onElementDoubleClick(element.id)}
