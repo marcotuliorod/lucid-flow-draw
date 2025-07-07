@@ -101,6 +101,9 @@ const CanvasElementComponent = ({
     }
   };
 
+  const elementStyle = getElementStyle();
+  console.log('CanvasElement: Element style for', element.id, ':', elementStyle);
+
   return (
     <div
       className={`absolute border cursor-move hover:shadow-lg transition-all duration-200 flex items-center justify-center text-sm font-medium text-white ${
@@ -108,7 +111,7 @@ const CanvasElementComponent = ({
           ? 'border-orange-500 ring-2 ring-orange-500/50 shadow-lg'
           : 'border-white/20 shadow-md'
       }`}
-      style={getElementStyle()}
+      style={elementStyle}
       onClick={() => onElementClick(element.id)}
       onDoubleClick={() => onElementDoubleClick(element.id)}
     >
