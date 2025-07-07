@@ -235,6 +235,7 @@ const Dashboard = () => {
                       variant="ghost"
                       size="sm"
                       className="text-slate-600 hover:text-slate-900 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-700"
+                      aria-label="Mais opções"
                     >
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>

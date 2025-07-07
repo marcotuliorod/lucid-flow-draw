@@ -276,7 +276,7 @@ const EditorHeader = ({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" aria-label="Exportar projeto">
                 <Download className="h-4 w-4 mr-2" />
                 Exportar
               </Button>
