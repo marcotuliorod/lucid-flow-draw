@@ -112,7 +112,7 @@ const EditorToolbar = ({ selectedTool, onToolSelect, onImageUpload }: EditorTool
   );
 
   return (
-    <aside className="w-20 bg-white dark:bg-slate-800 backdrop-blur-md border-r border-slate-200 dark:border-slate-700 flex flex-col py-4 space-y-4 overflow-y-auto">
+    <aside className="w-20 bg-white dark:bg-slate-800 backdrop-blur-md border-r border-slate-200 dark:border-slate-700 flex flex-col py-4 space-y-4 overflow-y-auto z-40">
       {renderToolSection(basicTools, "Básico")}
       <div className="h-px bg-slate-200 dark:bg-slate-600 mx-2" />
       {renderToolSection(processTools, "Processo")}

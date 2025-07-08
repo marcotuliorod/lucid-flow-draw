@@ -73,7 +73,7 @@ const MiniMap = ({
   };
 
   return (
-    <Card className="absolute bottom-4 right-4 p-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border shadow-lg">
+    <Card className="absolute bottom-4 right-4 p-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border shadow-lg z-50">
       <div className="space-y-2">
         <div className="text-xs font-medium text-slate-600 dark:text-slate-300">
           Mini-mapa
