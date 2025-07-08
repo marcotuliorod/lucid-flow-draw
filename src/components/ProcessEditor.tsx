@@ -73,13 +73,15 @@ const ProcessEditor = () => {
   } = useCanvas();
 
   // Load project elements into canvas when they become available OR add test elements
+  // Only load once when project is initially loaded, don't overwrite local changes
   useEffect(() => {
-    console.log('ProcessEditor: Loading elements effect - projectElements:', projectElements, 'currentProjectId:', currentProjectId);
+    console.log('ProcessEditor: Loading elements effect - projectElements:', projectElements, 'currentProjectId:', currentProjectId, 'current elements.length:', elements.length);
     
-    if (projectElements.length > 0) {
-      console.log('ProcessEditor: Loading project elements into canvas:', projectElements);
+    // Only load from database if we don't have elements locally yet
+    if (projectElements.length > 0 && elements.length === 0) {
+      console.log('ProcessEditor: Loading project elements into canvas (initial load):', projectElements);
       loadElements(projectElements);
-    } else if (currentProjectId === null && !loading) {
+    } else if (currentProjectId === null && !loading && elements.length === 0) {
       // Se for um novo projeto, adicionar elementos de teste para debug
       console.log('ProcessEditor: Adding test elements for new project');
       const testElements = [
@@ -106,8 +108,10 @@ const ProcessEditor = () => {
       ];
       console.log('ProcessEditor: Loading test elements:', testElements);
       loadElements(testElements);
+    } else if (projectElements.length > 0 && elements.length > 0) {
+      console.log('ProcessEditor: Skipping database reload - local elements exist:', elements.length);
     }
-  }, [projectElements, loadElements, currentProjectId, loading]);
+  }, [projectElements, loadElements, currentProjectId, loading, elements.length]);
 
   const handleElementDelete = (elementId: string) => {
     const newElements = elements.filter(el => el.id !== elementId);
