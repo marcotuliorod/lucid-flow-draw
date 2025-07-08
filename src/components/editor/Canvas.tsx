@@ -157,7 +157,7 @@ const Canvas = ({
       <div className="w-full h-full overflow-auto">
         <div 
           ref={canvasRef}
-          className={`w-full h-full bg-gray-100 dark:bg-gray-900 relative ${
+          className={`bg-gray-100 dark:bg-gray-900 relative ${
             selectedTool === 'select' ? 'cursor-default' : 
             selectedTool === 'arrow' ? 'cursor-crosshair' : 'cursor-copy'
           }`}
