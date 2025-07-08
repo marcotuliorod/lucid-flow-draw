@@ -153,7 +153,7 @@ const Canvas = ({
   };
 
   return (
-    <main className="flex-1 relative">
+    <main className="flex-1 relative min-h-0">
       <div className="w-full h-full overflow-auto">
         <div 
           ref={canvasRef}
@@ -167,8 +167,10 @@ const Canvas = ({
           style={{
             backgroundImage: showGrid ? `radial-gradient(circle, #94a3b8 1px, transparent 1px)` : 'none',
             backgroundSize: '24px 24px',
-            minWidth: '2000px',
-            minHeight: '1500px'
+            minWidth: 'max(100vw, 2000px)',
+            minHeight: 'max(100vh, 1500px)',
+            width: '2000px',
+            height: '1500px'
           }}
         >
         

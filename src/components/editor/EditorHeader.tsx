@@ -98,23 +98,23 @@ const EditorHeader = ({
   };
 
   return (
-    <header className="bg-white dark:bg-slate-800 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-6 py-3">
+    <header className="bg-white dark:bg-slate-800 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-3 md:px-6 py-3">
       <div className="flex items-center justify-between">
         {/* Left Section */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 md:space-x-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={onLogout}
             className="text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Dashboard
+            <ArrowLeft className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Dashboard</span>
           </Button>
 
-          <Separator orientation="vertical" className="h-6" />
+          <Separator orientation="vertical" className="h-6 hidden md:block" />
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 md:space-x-2">
             {isEditingName ? (
               <Input
                 value={projectName}
@@ -124,25 +124,26 @@ const EditorHeader = ({
                   if (e.key === 'Enter') handleNameSubmit();
                   if (e.key === 'Escape') setIsEditingName(false);
                 }}
-                className="text-lg font-medium w-64"
+                className="text-sm md:text-lg font-medium w-32 md:w-64"
                 autoFocus
               />
             ) : (
               <h1
-                className="text-lg font-medium text-slate-900 dark:text-white cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 px-2 py-1 rounded"
+                className="text-sm md:text-lg font-medium text-slate-900 dark:text-white cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 px-1 md:px-2 py-1 rounded truncate max-w-24 md:max-w-none"
                 onClick={() => setIsEditingName(true)}
+                title={projectName}
               >
                 {projectName}
               </h1>
             )}
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
               {elementsCount} elementos
             </Badge>
           </div>
         </div>
 
-        {/* Center Section - Tools */}
-        <div className="flex items-center space-x-2">
+        {/* Center Section - Tools - Hidden on mobile */}
+        <div className="hidden lg:flex items-center space-x-2">
           <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
             <Button
               variant="ghost"
@@ -194,7 +195,7 @@ const EditorHeader = ({
             </Button>
           </div>
 
-          <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
+          <div className="hidden xl:flex items-center space-x-1 bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
             <Button
               variant="ghost"
               size="sm"
@@ -227,7 +228,7 @@ const EditorHeader = ({
             </Button>
           </div>
 
-          <div className="flex items-center space-x-1 bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
+          <div className="hidden xl:flex items-center space-x-1 bg-slate-100 dark:bg-slate-700 rounded-lg p-1">
             <Button
               variant="ghost"
               size="sm"
@@ -263,25 +264,26 @@ const EditorHeader = ({
         </div>
 
         {/* Right Section */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1 md:space-x-2">
+          {/* Hidden on mobile */}
           <Button
             variant="outline"
             size="sm"
-            className="text-slate-600 dark:text-slate-300"
+            className="text-slate-600 dark:text-slate-300 hidden lg:flex"
             title="Modo de visualização"
           >
             <Eye className="h-4 w-4 mr-2" />
-            Visualizar
+            <span className="hidden xl:inline">Visualizar</span>
           </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" aria-label="Exportar projeto">
-                <Download className="h-4 w-4 mr-2" />
-                Exportar
+              <Button variant="outline" size="sm" aria-label="Exportar projeto" className="hidden md:flex">
+                <Download className="h-4 w-4 md:mr-2" />
+                <span className="hidden lg:inline">Exportar</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuContent align="end" className="w-48 bg-white dark:bg-slate-800 z-50">
               <DropdownMenuItem onClick={() => handleExport('pdf')}>
                 <Download className="h-4 w-4 mr-2" />
                 Exportar como PDF
@@ -301,9 +303,9 @@ const EditorHeader = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="hidden lg:flex">
             <Share className="h-4 w-4 mr-2" />
-            Compartilhar
+            <span className="hidden xl:inline">Compartilhar</span>
           </Button>
 
           <Button
@@ -313,11 +315,11 @@ const EditorHeader = ({
             size="sm"
           >
             {saving ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
             ) : (
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="h-4 w-4 mr-1" />
             )}
-            {saving ? 'Salvando...' : 'Salvar'}
+            <span className="hidden sm:inline">{saving ? 'Salvando...' : 'Salvar'}</span>
           </Button>
 
           <ThemeToggle />

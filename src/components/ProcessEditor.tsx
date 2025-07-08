@@ -173,14 +173,26 @@ const ProcessEditor = () => {
         zoom={zoom}
       />
 
-      <div className="flex flex-1">
+      {/* Mobile Toolbar */}
+      <div className="md:hidden">
         <EditorToolbar
           selectedTool={selectedTool}
           onToolSelect={setSelectedTool}
           onImageUpload={handleImageUploadWrapper}
         />
+      </div>
 
-        <div className="relative flex-1">
+      <div className="flex flex-1 overflow-hidden">
+        {/* Desktop Toolbar */}
+        <div className="hidden md:block">
+          <EditorToolbar
+            selectedTool={selectedTool}
+            onToolSelect={setSelectedTool}
+            onImageUpload={handleImageUploadWrapper}
+          />
+        </div>
+
+        <div className="relative flex-1 flex flex-col">
           <Canvas
             canvasRef={canvasRef}
             elements={elements}
@@ -207,22 +219,26 @@ const ProcessEditor = () => {
             zoom={zoom}
           />
 
-          {/* Mini-map */}
-          <MiniMap
-            elements={elements}
-            canvasSize={{ width: 2000, height: 1500 }}
-            viewportPosition={viewportPosition}
-            zoom={zoom / 100}
-            onViewportChange={setViewportPosition}
-          />
+          {/* Mini-map - Oculto em mobile */}
+          <div className="hidden lg:block">
+            <MiniMap
+              elements={elements}
+              canvasSize={{ width: 2000, height: 1500 }}
+              viewportPosition={viewportPosition}
+              zoom={zoom / 100}
+              onViewportChange={setViewportPosition}
+            />
+          </div>
 
-          {/* Layers Panel */}
-          <LayersPanel
-            elements={elements}
-            selectedElement={selectedElement}
-            onElementSelect={setSelectedElement}
-            onElementDelete={handleElementDelete}
-          />
+          {/* Layers Panel - Oculto em mobile */}
+          <div className="hidden lg:block">
+            <LayersPanel
+              elements={elements}
+              selectedElement={selectedElement}
+              onElementSelect={setSelectedElement}
+              onElementDelete={handleElementDelete}
+            />
+          </div>
         </div>
       </div>
     </div>

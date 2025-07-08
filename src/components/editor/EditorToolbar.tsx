@@ -119,26 +119,75 @@ const EditorToolbar = ({ selectedTool, onToolSelect, onImageUpload }: EditorTool
   );
 
   return (
-    <aside className="w-20 bg-white dark:bg-slate-800 backdrop-blur-md border-r border-slate-200 dark:border-slate-700 flex flex-col py-4 space-y-4 overflow-y-auto z-40">
-      {renderToolSection(basicTools, "Básico")}
-      <div className="h-px bg-slate-200 dark:bg-slate-600 mx-2" />
-      {renderToolSection(processTools, "Processo")}
-      <div className="h-px bg-slate-200 dark:bg-slate-600 mx-2" />
-      {renderToolSection(shapeTools, "Formas")}
-      <div className="h-px bg-slate-200 dark:bg-slate-600 mx-2" />
-      {renderToolSection(connectionTools, "Conexão")}
-      
-      <Input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileChange}
-        className="hidden"
-        id="file-upload"
-        aria-label="Fazer upload de imagem"
-        title="Selecionar arquivo de imagem"
-      />
-    </aside>
+    <>
+      {/* Desktop Toolbar - Sidebar vertical */}
+      <aside className="hidden md:flex w-20 bg-white dark:bg-slate-800 backdrop-blur-md border-r border-slate-200 dark:border-slate-700 flex-col py-4 space-y-4 overflow-y-auto z-40">
+        {renderToolSection(basicTools, "Básico")}
+        <div className="h-px bg-slate-200 dark:bg-slate-600 mx-2" />
+        {renderToolSection(processTools, "Processo")}
+        <div className="h-px bg-slate-200 dark:bg-slate-600 mx-2" />
+        {renderToolSection(shapeTools, "Formas")}
+        <div className="h-px bg-slate-200 dark:bg-slate-600 mx-2" />
+        {renderToolSection(connectionTools, "Conexão")}
+        
+        <Input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+          id="file-upload"
+          aria-label="Fazer upload de imagem"
+          title="Selecionar arquivo de imagem"
+        />
+      </aside>
+
+      {/* Mobile Toolbar - Horizontal */}
+      <div className="md:hidden bg-white dark:bg-slate-800 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 p-2 overflow-x-auto z-40">
+        <div className="flex space-x-2 min-w-max">
+          {allTools.map((tool) => {
+            const Icon = tool.icon;
+            const isImageTool = tool.id === 'image';
+            
+            return (
+              <Button
+                key={tool.id}
+                variant={selectedTool === tool.id ? "default" : "ghost"}
+                size="sm"
+                className={`min-w-12 h-12 p-0 rounded-lg ${
+                  selectedTool === tool.id 
+                    ? 'bg-purple-600 text-white shadow-lg' 
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-700'
+                }`}
+                onClick={() => {
+                  console.log('Tool clicked:', tool.id, 'current selectedTool:', selectedTool);
+                  if (isImageTool) {
+                    handleImageClick();
+                  } else {
+                    onToolSelect(tool.id);
+                  }
+                }}
+                title={tool.label}
+                aria-label={tool.label}
+              >
+                <Icon className="h-4 w-4" />
+              </Button>
+            );
+          })}
+        </div>
+        
+        <Input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="hidden"
+          id="file-upload-mobile"
+          aria-label="Fazer upload de imagem"
+          title="Selecionar arquivo de imagem"
+        />
+      </div>
+    </>
   );
 };
 
