@@ -63,18 +63,23 @@ export const useMouseHandlers = ({
     const pos = getCanvasPosition(e);
     if (!pos) return;
 
+    console.log('MouseDown - selectedTool:', selectedTool, 'position:', pos);
+
     if (selectedTool === 'select') {
       const clickedElement = findClickedElement(pos.x, pos.y, elements);
+      console.log('Select tool - clickedElement:', clickedElement);
       setSelectedElement(clickedElement ? clickedElement.id : null);
       return;
     }
     
+    console.log('Starting drawing with tool:', selectedTool);
     setStartPos(pos);
     setCurrentPos(pos);
     setIsDrawing(true);
 
     if (selectedTool === 'arrow') {
       const nearEl = findNearElement(pos.x, pos.y, elements);
+      console.log('Arrow tool - nearElement:', nearEl);
       setNearElement(nearEl?.id || null);
     }
   };
@@ -99,20 +104,26 @@ export const useMouseHandlers = ({
     const pos = getCanvasPosition(e);
     if (!pos) return;
 
+    console.log('MouseUp - selectedTool:', selectedTool, 'startPos:', startPos, 'endPos:', pos);
+
     if (selectedTool === 'arrow') {
       const startElement = findNearElement(startPos.x, startPos.y, elements);
       const endElement = findNearElement(pos.x, pos.y, elements);
+      console.log('Arrow creation - startElement:', startElement, 'endElement:', endElement);
 
       if (startElement && endElement && startElement.id !== endElement.id) {
         const newArrow = createArrowElement(startElement, endElement);
+        console.log('Creating arrow:', newArrow);
         setElements(prev => [...prev, newArrow]);
       }
     } else {
       const width = Math.abs(pos.x - startPos.x);
       const height = Math.abs(pos.y - startPos.y);
+      console.log('Shape creation - width:', width, 'height:', height);
 
       if (width > 10 || height > 10) {
         const toolType = validateToolType(selectedTool);
+        console.log('Validated tool type:', toolType);
         const newElement = createShapeElement(
           toolType,
           Math.min(startPos.x, pos.x),
@@ -121,7 +132,10 @@ export const useMouseHandlers = ({
           height,
           getDefaultText
         );
+        console.log('Creating element:', newElement);
         setElements(prev => [...prev, newElement]);
+      } else {
+        console.log('Element too small, not creating');
       }
     }
 

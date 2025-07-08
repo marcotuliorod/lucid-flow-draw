@@ -99,7 +99,14 @@ const EditorToolbar = ({ selectedTool, onToolSelect, onImageUpload }: EditorTool
                   ? 'bg-purple-600 text-white shadow-lg' 
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-300 dark:hover:text-white dark:hover:bg-slate-700'
               }`}
-              onClick={isImageTool ? handleImageClick : () => onToolSelect(tool.id)}
+              onClick={() => {
+                console.log('Tool clicked:', tool.id, 'current selectedTool:', selectedTool);
+                if (isImageTool) {
+                  handleImageClick();
+                } else {
+                  onToolSelect(tool.id);
+                }
+              }}
               title={tool.label}
               aria-label={tool.label}
             >
