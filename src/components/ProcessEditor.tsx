@@ -140,7 +140,10 @@ const ProcessEditor = () => {
     console.log('ProcessEditor: Showing loading screen');
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
-        <div className="text-slate-600 dark:text-slate-300">Carregando projeto...</div>
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <div className="text-slate-600 dark:text-slate-300">Carregando projeto...</div>
+        </div>
       </div>
     );
   }

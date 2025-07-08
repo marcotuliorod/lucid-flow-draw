@@ -6,13 +6,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth";
 import { useSecurity } from "./hooks/useSecurity";
-import { useEffect } from "react";
-import Index from "./pages/Index";
-import Resources from "./pages/Resources";
-import Dashboard from "./components/Dashboard";
-import ProcessEditor from "./components/ProcessEditor";
-import LoginForm from "./components/auth/LoginForm";
-import NotFound from "./pages/NotFound";
+import { useEffect, lazy } from "react";
+import { usePerformanceMonitor } from "./hooks/usePerformanceMonitor";
+
+// Lazy loading das páginas
+const Index = lazy(() => import("./pages/Index"));
+const Resources = lazy(() => import("./pages/Resources"));
+const Dashboard = lazy(() => import("./components/Dashboard"));
+const ProcessEditor = lazy(() => import("./components/ProcessEditor"));
+const LoginForm = lazy(() => import("./components/auth/LoginForm"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -64,6 +67,9 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 const AppContent = () => {
   // Initialize security middleware
   useSecurity();
+  
+  // Initialize performance monitoring
+  usePerformanceMonitor();
 
   return (
     <div className="min-h-screen">
