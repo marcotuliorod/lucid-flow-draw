@@ -1,9 +1,13 @@
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { CanvasElement } from "./types";
 import CanvasElementComponent from "./CanvasElement";
 import ArrowElement from "./ArrowElement";
+import SmartArrowElement from "./SmartArrowElement";
 import EmptyCanvas from "./EmptyCanvas";
+import { useElementDragging } from "./hooks/useElementDragging";
+import { useZoomAndPan } from "./hooks/useZoomAndPan";
+import { useSmartConnections } from "./hooks/useSmartConnections";
 
 interface CanvasProps {
   canvasRef: React.RefObject<HTMLDivElement>;
@@ -29,6 +33,7 @@ interface CanvasProps {
   onToolSelect: (toolId: string) => void;
   showGrid?: boolean;
   zoom?: number;
+  setElements?: (updater: (prev: CanvasElement[]) => CanvasElement[]) => void;
 }
 
 const Canvas = ({
@@ -54,9 +59,93 @@ const Canvas = ({
   onKeyPress,
   onToolSelect,
   showGrid = true,
-  zoom = 100
+  zoom = 100,
+  setElements
 }: CanvasProps) => {
   console.log('Canvas: Rendering with elements:', elements, 'Elements count:', elements.length);
+  
+  // Hook para arrastar elementos
+  const { isDragging: isDraggingElement, startDrag, updateDrag, endDrag } = useElementDragging({
+    elements,
+    setElements: setElements || (() => {}),
+    selectedElement
+  });
+
+  // Hook para conexões inteligentes
+  const { findNearbyElements, validateConnection } = useSmartConnections({ elements });
+
+  // Hook para zoom e pan
+  const {
+    viewport,
+    handleWheel,
+    startPan,
+    updatePan,
+    endPan,
+    isPanning,
+    screenToCanvas
+  } = useZoomAndPan();
+
+  // Gerencia eventos de mouse para arrastar elementos
+  const handleElementMouseDown = (elementId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectedTool === 'select' && selectedElement === elementId) {
+      startDrag(elementId, e.clientX, e.clientY);
+    }
+    onElementClick(elementId);
+  };
+
+  // Eventos globais de mouse para arrastar
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (isDraggingElement) {
+        updateDrag(e.clientX, e.clientY);
+      } else if (isPanning) {
+        updatePan(e.clientX, e.clientY);
+      }
+    };
+
+    const handleGlobalMouseUp = () => {
+      if (isDraggingElement) {
+        endDrag();
+      }
+      if (isPanning) {
+        endPan();
+      }
+    };
+
+    if (isDraggingElement || isPanning) {
+      document.addEventListener('mousemove', handleGlobalMouseMove);
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove);
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isDraggingElement, isPanning, updateDrag, endDrag, updatePan, endPan]);
+
+  // Manipula scroll para zoom
+  const handleCanvasWheel = (e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      const canvasRect = canvasRef.current?.getBoundingClientRect();
+      if (canvasRect) {
+        handleWheel(e, canvasRect);
+      }
+    }
+  };
+
+  // Manipula início do pan com botão do meio ou espaço + clique
+  const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    if (e.button === 1 || (e.button === 0 && e.ctrlKey)) {
+      // Botão do meio ou Ctrl + clique esquerdo para pan
+      e.preventDefault();
+      startPan(e.clientX, e.clientY);
+      return;
+    }
+    
+    // Chama o handler original
+    onMouseDown(e);
+  };
   // Renderizar linha da seta durante o desenho
   const renderArrowPreview = () => {
     if (!isDrawing || selectedTool !== 'arrow') return null;
@@ -158,54 +247,65 @@ const Canvas = ({
         <div 
           ref={canvasRef}
           className={`bg-gray-100 dark:bg-gray-900 relative ${
+            isPanning ? 'cursor-grabbing' : 
             selectedTool === 'select' ? 'cursor-default' : 
             selectedTool === 'arrow' ? 'cursor-crosshair' : 'cursor-copy'
           }`}
-          onMouseDown={onMouseDown}
+          onMouseDown={handleCanvasMouseDown}
           onMouseMove={onMouseMove}
           onMouseUp={onMouseUp}
+          onWheel={handleCanvasWheel}
           style={{
             backgroundImage: showGrid ? `radial-gradient(circle, #94a3b8 1px, transparent 1px)` : 'none',
-            backgroundSize: '24px 24px',
+            backgroundSize: `${24 * (zoom / 100)}px ${24 * (zoom / 100)}px`,
+            backgroundPosition: `${viewport.x}px ${viewport.y}px`,
             minWidth: 'max(100vw, 2000px)',
             minHeight: 'max(100vh, 1500px)',
             width: '2000px',
-            height: '1500px'
+            height: '1500px',
+            transform: `scale(${zoom / 100}) translate(${viewport.x}px, ${viewport.y}px)`,
+            transformOrigin: '0 0'
           }}
         >
         
-        {/* Elementos existentes */}
-        {elements.map((element) => {
-          if (element.type === 'arrow') {
+        {/* Elementos existentes com melhor renderização */}
+        <svg 
+          className="absolute inset-0 pointer-events-none"
+          style={{ width: '100%', height: '100%' }}
+        >
+          {/* Renderiza apenas as setas como SVG para melhor qualidade */}
+          {elements.filter(el => el.type === 'arrow').map((element) => {
             const startElement = elements.find(el => el.id === element.startElementId);
             const endElement = elements.find(el => el.id === element.endElementId);
             
             return (
-              <ArrowElement
+              <SmartArrowElement
                 key={element.id}
                 element={element}
                 startElement={startElement}
                 endElement={endElement}
                 isSelected={selectedElement === element.id}
+                scale={zoom / 100}
               />
             );
-          }
+          })}
+        </svg>
 
-          return (
-            <CanvasElementComponent
-              key={element.id}
-              element={element}
-              isSelected={selectedElement === element.id}
-              isEditing={editingText === element.id}
-              editText={tempText}
-              onElementClick={onElementClick}
-              onElementDoubleClick={onElementDoubleClick}
-              onTextChange={onTextChange}
-              onTextSubmit={onTextSubmit}
-              onKeyPress={onKeyPress}
-            />
-          );
-        })}
+        {/* Elementos não-seta */}
+        {elements.filter(el => el.type !== 'arrow').map((element) => (
+          <CanvasElementComponent
+            key={element.id}
+            element={element}
+            isSelected={selectedElement === element.id}
+            isEditing={editingText === element.id}
+            editText={tempText}
+            onElementClick={(id) => handleElementMouseDown(id, {} as React.MouseEvent)}
+            onElementDoubleClick={onElementDoubleClick}
+            onTextChange={onTextChange}
+            onTextSubmit={onTextSubmit}
+            onKeyPress={onKeyPress}
+          />
+        ))}
 
         {/* Preview da seta durante o desenho */}
         {renderArrowPreview()}

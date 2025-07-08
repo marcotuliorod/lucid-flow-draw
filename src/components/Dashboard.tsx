@@ -31,11 +31,13 @@ import {
   Download,
   Share,
   MoreHorizontal,
-  Pen
+  Pen,
+  GitBranch
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProjects } from "@/hooks/useProjects";
+import { useNewProject } from "./editor/hooks/useNewProject";
 import ThemeToggle from "./ThemeToggle";
 import { toast } from "sonner";
 
@@ -43,6 +45,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { projects, loading, deleteProject, saveProject } = useProjects(user?.id);
+  const { createNewProject, createProjectFromTemplate, duplicateProject } = useNewProject();
   console.log('Dashboard - User ID:', user?.id, 'Projects:', projects, 'Loading:', loading);
   const [searchTerm, setSearchTerm] = useState("");
   const [renamingProject, setRenamingProject] = useState<{ id: string; name: string } | null>(null);
@@ -63,20 +66,7 @@ const Dashboard = () => {
   };
 
   const handleDuplicateProject = async (project: any) => {
-    try {
-      const { data, error } = await saveProject(
-        `${project.name} - Cópia`,
-        project.elements
-      );
-      
-      if (error) {
-        toast.error("Erro ao duplicar projeto");
-      } else {
-        toast.success("Projeto duplicado com sucesso!");
-      }
-    } catch (err) {
-      toast.error("Erro inesperado ao duplicar projeto");
-    }
+    duplicateProject(project);
   };
 
   const handleRenameProject = async () => {
@@ -173,13 +163,28 @@ const Dashboard = () => {
               Gerencie seus diagramas de processo
             </p>
           </div>
-          <Button 
-            onClick={() => navigate('/editor/new')}
-            className="bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 hover:from-purple-700 hover:via-pink-600 hover:to-rose-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Novo Fluxo
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 hover:from-purple-700 hover:via-pink-600 hover:to-rose-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
+                <Plus className="h-4 w-4 mr-2" />
+                Novo Fluxo
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={createNewProject}>
+                <Plus className="h-4 w-4 mr-2" />
+                Projeto em Branco
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createProjectFromTemplate('simple')}>
+                <Workflow className="h-4 w-4 mr-2" />
+                Fluxo Simples
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => createProjectFromTemplate('decision')}>
+                <GitBranch className="h-4 w-4 mr-2" />
+                Fluxo com Decisão
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         {/* Search */}
@@ -286,7 +291,7 @@ const Dashboard = () => {
             </p>
             {!searchTerm && (
               <Button 
-                onClick={() => navigate('/editor/new')}
+                onClick={createNewProject}
                 className="bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 hover:from-purple-700 hover:via-pink-600 hover:to-rose-600 text-white font-medium rounded-lg"
               >
                 <Plus className="h-4 w-4 mr-2" />

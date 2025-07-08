@@ -5,10 +5,12 @@ import EditorToolbar from "./editor/EditorToolbar";
 import Canvas from "./editor/Canvas";
 import MiniMap from "./editor/MiniMap";
 import LayersPanel from "./editor/LayersPanel";
+import { CanvasElement } from "./editor/types";
 import { useCanvas } from "./editor/hooks/useCanvas";
 import { useProjectEditor } from "./editor/hooks/useProjectEditor";
 import { useEditorActions } from "./editor/hooks/useEditorActions";
 import { useImageUpload } from "./editor/hooks/useImageUpload";
+import { useExportFlow } from "./editor/hooks/useExportFlow";
 
 const ProcessEditor = () => {
   console.log('ProcessEditor: Component initialized');
@@ -45,6 +47,7 @@ const ProcessEditor = () => {
   } = useEditorActions();
 
   const { handleImageUpload } = useImageUpload();
+  const { exportToPDF, exportToPNG, exportToSVG, exportToJSON } = useExportFlow();
 
   const {
     canvasRef,
@@ -122,6 +125,25 @@ const ProcessEditor = () => {
     handleSave(elements);
   };
 
+  const handleExportFlow = async (format: string) => {
+    switch (format) {
+      case 'pdf':
+        await exportToPDF(elements, projectName);
+        break;
+      case 'png':
+        await exportToPNG(elements, projectName);
+        break;
+      case 'svg':
+        await exportToSVG(elements, projectName);
+        break;
+      case 'json':
+        await exportToJSON(elements, projectName);
+        break;
+      default:
+        console.log(`Formato ${format} não suportado`);
+    }
+  };
+
   const handleImageUploadWrapper = (file: File) => {
     handleImageUpload(file, addImageElement);
   };
@@ -132,6 +154,10 @@ const ProcessEditor = () => {
 
   const handleRedoWrapper = () => {
     handleRedo(loadElements);
+  };
+
+  const setElementsWrapper = (updater: (prev: CanvasElement[]) => CanvasElement[]) => {
+    loadElements(updater(elements));
   };
 
   console.log('ProcessEditor: Rendering - loading:', loading, 'elements.length:', elements.length);
@@ -157,7 +183,8 @@ const ProcessEditor = () => {
         setProjectName={setProjectName}
         elementsCount={elements.length}
         onSave={handleSaveProject}
-        onExportPDF={handleExportPDF}
+        onExportPDF={() => handleExportFlow('pdf')}
+        onExportFlow={handleExportFlow}
         onLogout={handleBackToDashboard}
         saving={loading}
         onUndo={handleUndoWrapper}
@@ -220,6 +247,7 @@ const ProcessEditor = () => {
             onToolSelect={setSelectedTool}
             showGrid={showGrid}
             zoom={zoom}
+            setElements={setElementsWrapper}
           />
 
           {/* Mini-map - Oculto em mobile */}

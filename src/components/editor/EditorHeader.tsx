@@ -41,6 +41,7 @@ interface EditorHeaderProps {
   elementsCount: number;
   onSave: () => void;
   onExportPDF: () => void;
+  onExportFlow?: (format: string) => void;
   onLogout: () => void;
   saving?: boolean;
   onUndo?: () => void;
@@ -65,6 +66,7 @@ const EditorHeader = ({
   elementsCount, 
   onSave, 
   onExportPDF, 
+  onExportFlow,
   onLogout,
   saving = false,
   onUndo,
@@ -92,6 +94,8 @@ const EditorHeader = ({
   const handleExport = (format: string) => {
     if (format === 'pdf') {
       onExportPDF();
+    } else if (onExportFlow) {
+      onExportFlow(format);
     } else {
       console.log(`Exportando como ${format}...`);
     }
