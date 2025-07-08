@@ -4,7 +4,7 @@ import { z } from 'zod'
 // Schema for canvas element validation
 export const canvasElementSchema = z.object({
   id: z.string().uuid('ID do elemento deve ser um UUID válido'),
-  type: z.enum(['rectangle', 'circle', 'text', 'arrow'], {
+  type: z.enum(['rectangle', 'circle', 'diamond', 'arrow', 'text', 'image', 'start', 'end', 'task', 'decision', 'subprocess', 'document', 'annotation'], {
     errorMap: () => ({ message: 'Tipo de elemento inválido' })
   }),
   x: z.number().min(0).max(10000, 'Posição X inválida'),
