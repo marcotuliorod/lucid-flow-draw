@@ -17,7 +17,7 @@ const MiniMap = ({
   zoom,
   onViewportChange 
 }: MiniMapProps) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = canvasRef.current?.getBoundingClientRect(); //useRef<HTMLCanvasElement>(null);
   const miniMapSize = { width: 200, height: 150 };
   
   const scale = Math.min(
