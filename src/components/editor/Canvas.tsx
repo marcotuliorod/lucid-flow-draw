@@ -153,23 +153,24 @@ const Canvas = ({
   };
 
   return (
-    <main className="flex-1 relative overflow-hidden">
-      <div 
-        ref={canvasRef}
-        className={`w-full h-full bg-gray-100 dark:bg-gray-900 relative ${
-          selectedTool === 'select' ? 'cursor-default' : 
-          selectedTool === 'arrow' ? 'cursor-crosshair' : 'cursor-copy'
-        }`}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        style={{
-          backgroundImage: showGrid ? `radial-gradient(circle, #94a3b8 1px, transparent 1px)` : 'none',
-          backgroundSize: '24px 24px',
-          transform: `scale(${zoom / 100})`,
-          transformOrigin: 'top left'
-        }}
-      >
+    <main className="flex-1 relative">
+      <div className="w-full h-full overflow-auto">
+        <div 
+          ref={canvasRef}
+          className={`w-full h-full bg-gray-100 dark:bg-gray-900 relative ${
+            selectedTool === 'select' ? 'cursor-default' : 
+            selectedTool === 'arrow' ? 'cursor-crosshair' : 'cursor-copy'
+          }`}
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
+          style={{
+            backgroundImage: showGrid ? `radial-gradient(circle, #94a3b8 1px, transparent 1px)` : 'none',
+            backgroundSize: '24px 24px',
+            minWidth: '2000px',
+            minHeight: '1500px'
+          }}
+        >
         
         {/* Elementos existentes */}
         {elements.map((element) => {
@@ -214,6 +215,7 @@ const Canvas = ({
         {elements.length === 0 && (
           <EmptyCanvas onToolSelect={onToolSelect} />
         )}
+        </div>
       </div>
     </main>
   );
